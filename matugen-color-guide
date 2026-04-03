@@ -1,0 +1,50 @@
+primary
+Your main accent.
+Vivid, full strength.
+Active pill, borders.
+
+on_primary
+Text/icons ON top
+of primary. Always
+high contrast pair.
+
+primary_container
+Softer/muted version
+of primary. Good for
+inactive borders.
+
+on_primary_container
+Text ON top of
+primary_container.
+Contrast pair.
+
+secondary
+2nd accent color.
+Different hue family.
+
+secondary_container
+Muted secondary.
+Chips, tags, badges.
+
+on_secondary_container
+Text on top of
+secondary_container.
+
+tertiary
+3rd accent. Contrast
+color to break it up.
+
+tertiary_container
+Muted tertiary.
+
+surface
+Background tone.
+Cards, bar bg.
+
+surface_variant
+Slightly tinted
+surface. Containers.
+
+on_surface_variant
+Dim text, icons.
+Inactive workspace.

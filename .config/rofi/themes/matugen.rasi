@@ -26,9 +26,9 @@ mainbox {
 }
 
 inputbar {
-    background-color:   #1c202480;
+    background-color:   #261e1880;
     border:             2px solid;
-    border-color:       #91cef4;
+    border-color:       #feb876;
     border-radius:      20px;
     padding:            12px 16px;
     spacing:            8px;
@@ -37,24 +37,24 @@ inputbar {
 
 prompt {
     background-color:   transparent;
-    text-color:         #91cef4ff;
+    text-color:         #feb876ff;
     font:               "JetBrainsMono Nerd Font Bold 13";
     vertical-align:     0.5;
 }
 
 entry {
     background-color:   transparent;
-    text-color:         #c1c7ce;
+    text-color:         #d5c3b6;
     placeholder:        "Search";
-    placeholder-color:  #c1c7ce;
+    placeholder-color:  #d5c3b6;
     vertical-align:     0.5;
     expand:             true;
 }
 
 listview {
-    background-color:   #1c202480;
+    background-color:   #261e1880;
     border:             1px solid;
-    border-color:       #8b9297aa;
+    border-color:       #9e8e81aa;
     border-radius:      20px;
     spacing:            2px;
     padding:            6px;
@@ -77,17 +77,17 @@ element {
 
 element normal.normal {
     background-color:   transparent;
-    text-color:         #dfe3e7;
+    text-color:         #efe0d5;
 }
 
 element selected.normal {
-    background-color:   #91cef4;
-    text-color:         #00344b;
+    background-color:   #feb876;
+    text-color:         #4b2800;
 }
 
 element alternate.normal {
     background-color:   transparent;
-    text-color:         #dfe3e7;
+    text-color:         #efe0d5;
 }
 
 element-icon {
