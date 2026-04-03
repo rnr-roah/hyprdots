@@ -1,0 +1,130 @@
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font", monospace;
+    font-size: 14px;
+    margin: 0;
+    padding: 0;
+}
+
+window#waybar {
+    background: rgba(17, 17, 27, 0.75);
+    color: #cdd6f4;
+}
+
+#custom-logo {
+    color: #89b4fa;
+    font-size: 18px;
+    padding: 10px 4px;
+    min-width: 48px;
+}
+
+#workspaces {
+    padding: 4px 0;
+}
+
+#workspaces button {
+    all: unset;
+    color: #45475a;
+    font-size: 10px;
+    padding: 4px 0;
+    min-width: 48px;
+    min-height: 20px;
+}
+
+#workspaces button.active {
+    color: #89b4fa;
+    font-size: 13px;
+}
+
+#workspaces button.urgent {
+    color: #f38ba8;
+}
+
+#workspaces button:hover {
+    color: #cdd6f4;
+}
+
+
+
+#battery {
+    font-size: 16px;
+    color: #6c7086;
+    min-width: 48px;
+    min-height: 24px;
+    padding: 6px 0;
+}
+
+#battery.charging, #battery.plugged { color: #a6e3a1; }
+#battery.warning:not(.charging) { color: #fab387; }
+#battery.critical:not(.charging) {
+    color: #f38ba8;
+    animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+    50% { color: transparent; }
+}
+
+#backlight {
+    font-size: 15px;
+    color: #6c7086;
+    min-width: 48px;
+    min-height: 24px;
+    padding: 6px 0;
+}
+
+#network {
+    font-size: 16px;
+    color: #6c7086;
+    min-width: 48px;
+    min-height: 24px;
+    padding: 6px 0;
+}
+
+#network.disconnected { color: #f38ba8; }
+
+#bluetooth {
+    font-size: 15px;
+    color: #6c7086;
+    min-width: 48px;
+    min-height: 24px;
+    padding: 6px 0;
+}
+
+#bluetooth.connected { color: #89b4fa; }
+#bluetooth.disabled { color: #313244; }
+
+#pulseaudio {
+    font-size: 16px;
+    color: #6c7086;
+    min-width: 48px;
+    min-height: 24px;
+    padding: 6px 0;
+}
+
+#pulseaudio.muted { color: #45475a; }
+
+#clock {
+    font-size: 12px;
+    font-weight: 600;
+    color: #585b70;
+    min-width: 48px;
+    min-height: 24px;
+    padding: 8px 0;
+}
+
+#tray {
+    min-width: 48px;
+    padding: 6px 0;
+}
+
+#tray > .passive { -gtk-icon-effect: dim; }
+#tray > .needs-attention { color: #f38ba8; }
+
+#custom-scrolling-indicator {
+    color: #ff0000;
+    min-width: 48px;
+    min-height: 30px;
+    background: #ffff00;
+}

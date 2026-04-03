@@ -1,0 +1,344 @@
+/* Left sidebar style — mirrors top bar aesthetic */
+/* By Roah — left variant */
+
+@define-color background @surface;
+@define-color background-alt alpha(@background, 1);
+@define-color background-alt2 alpha(@background, 1);
+@define-color text #ffffff;
+@define-color text-alt #ffffff;
+@define-color selected alpha(@text-alt, .4);
+@define-color hover alpha(@selected, .4);
+@import "colors.css";
+
+* {
+  border: none;
+  font-family: "Symbols Nerd Font Mono", "Symbols Nerd Font", "Nerd Font Complete", "Nerd Font", monospace;
+  font-size: 13px;
+  font-feature-settings: '"zero", "ss01", "ss02", "ss03", "ss04", "ss05", "cv31"';
+  min-height: 0px;
+  min-width: 0px;
+  transition: 60ms;
+}
+
+/* ── Bar itself ─────────────────────────────────────────── */
+window#waybar {
+  background: linear-gradient(to right, rgba(8, 8, 11, 0.5), rgba(25, 26, 36, 0));
+}
+
+/* ── Workspaces ─────────────────────────────────────────── */
+#workspaces {
+  border-radius: 20px;
+  background-color: @surface;
+  color: #c0caf5;
+  opacity: 0.8;
+  margin-top: 10px;
+  margin-bottom: 0px;
+  margin-left: 5px;
+  margin-right: 5px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+#workspaces button {
+  min-width: 28px;
+  min-height: 28px;
+  margin: 3px 4px;
+  padding: 0;
+  border-radius: 50%;
+  background: alpha(@primary_container, 0.2);
+  color: alpha(@on_primary_container, 0.35);
+  border: none;
+  box-shadow: none;
+}
+
+#workspaces button.active {
+  min-width: 28px;
+  min-height: 36px;
+  padding: 8px 0;
+  border-radius: 999px;
+  background: @primary_container;
+  color: @on_primary_container;
+  font-weight: 600;
+}
+
+#workspaces button:hover:not(.active) {
+  background: alpha(@on_surface_variant, 0.15);
+  color: alpha(@on_surface_variant, 0.6);
+}
+
+/* ── Drawer group — backlight/battery/pulseaudio/etc ────── */
+#backlight,
+#pulseaudio,
+#battery,
+#tray,
+#custom-spacer1,
+#custom-nightlight,
+#custom-minimal,
+#custom-arrow,
+#custom-updates {
+  background-color: @background-alt;
+  font-size: 12px;
+  opacity: 1;
+  color: #c0caf5;
+  margin-left: 5px;
+  margin-right: 5px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 0px;
+  padding-right: 0px;
+  min-width: 38px;
+}
+
+/* Pill caps — top bar used left/right radius; we use top/bottom */
+#custom-nightlight {
+  border-radius: 0px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  margin-top: 1px;
+  padding-top: 10px;
+  padding-bottom: 6px;
+  font-size: 14px;
+}
+
+#backlight {
+  border-radius: 0px;
+  margin-top: -4px;
+}
+
+#battery {
+  border-radius: 0px;
+}
+
+#pulseaudio {
+  border-radius: 0px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  margin-bottom: -4px;
+}
+
+#custom-spacer1 {
+  background-color: @background-alt;
+  font-size: 8px;
+  opacity: 1;
+  color: alpha(@on_surface_variant, 0.3);
+  margin-left: 5px;
+  margin-right: 5px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#custom-arrow {
+  font-size: 13px;
+  padding-top: 10px;
+  padding-bottom: 6px;
+  background-color: @background;
+  opacity: 0.8;
+}
+
+#custom-minimal {
+  font-size: 15px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  background-color: @background;
+  opacity: 0.8;
+  border-radius: 0px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+/* ── Tray ────────────────────────────────────────────────── */
+#tray {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-radius: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+/* ── Updates ─────────────────────────────────────────────── */
+#custom-updates {
+  color: alpha(@tertiary, 0.85);         /* matugen: calm accent instead of hardcoded green */
+  background-color: @background-alt;
+  font-size: 12px;
+  opacity: 1;
+  border-radius: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+/* ── Expandable3 center group ────────────────────────────── */
+#custom-window-name {
+  color: @on_primary_container;          /* matugen */
+  opacity: 0.9;
+  font-size: 10px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-left: 5px;
+  margin-right: 5px;
+  min-width: 38px;
+}
+
+#custom-google,
+#custom-whatsapp,
+#custom-pavucontrol {
+  background: linear-gradient(to right, rgba(25, 26, 36, 0.1), rgba(8, 8, 11, 0.1));
+  border-radius: 100px;
+  font-size: 14px;
+  color: #c0caf5;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  min-width: 38px;
+}
+
+/* ── Bottom strip — mirrors right side of top bar ────────── */
+#custom-power_mode {
+  border-radius: 0px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  background-color: @background;
+  color: @secondary;                     /* matugen: was hardcoded #c0caf5 */
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 0px;
+  opacity: 0.8;
+  padding-top: 10px;
+  padding-bottom: 8px;
+  font-size: 15px;
+  min-width: 38px;
+}
+
+#custom-shot,
+#custom-pomo,
+#custom-tab {
+  background-color: @background;
+  font-size: 11px;
+  opacity: 0.8;
+  color: #c0caf5;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  min-width: 38px;
+}
+
+#custom-dropdown {
+  color: #c0caf5;
+  opacity: 0.7;
+  border-radius: 100px;
+  margin-left: 8px;
+  margin-right: 8px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  background: @background-alt;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  font-size: 10px;
+  min-width: 32px;
+}
+
+#custom-playerctl {
+  border-radius: 0px;
+  background-color: @background;
+  opacity: 0.7;
+  color: @tertiary_fixed;               /* matugen: soft accent for now-playing */
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 1px;
+  margin-bottom: 1px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  font-size: 14px;
+  min-width: 38px;
+}
+
+#clock {
+  border-radius: 0px;
+  background-color: @background;
+  color: @on_surface;                   /* matugen: adapts with theme */
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  opacity: 0.8;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  font-size: 12px;
+  min-width: 38px;
+}
+
+#custom-spacer2 {
+  border-radius: 0px;
+  color: alpha(@on_surface_variant, 0.25);  /* matugen: subtle divider */
+  background-color: @background;
+  opacity: 0.8;
+  margin-left: 5px;
+  margin-right: 5px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  font-size: 8px;
+  min-width: 38px;
+}
+
+#custom-notifications {
+  border-radius: 0px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  background-color: @background;
+  color: @on_surface;                   /* matugen */
+  opacity: 0.8;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  padding-top: 8px;
+  padding-bottom: 10px;
+  min-width: 38px;
+}
+
+#custom-notifications:hover {
+  animation-duration: 0.5s;
+  color: @secondary;                    /* matugen: hover accent */
+}
+
+#network {
+  background-color: transparent;
+  color: @on_surface_variant;           /* matugen: was plain white */
+  margin-left: 0px;
+  margin-right: 0px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  font-size: 14px;
+  min-width: 38px;
+}
+
+/* ── Battery warning blink ───────────────────────────────── */
+@keyframes blink {
+  to {
+    background-color: #ffffff;
+    color: black;
+  }
+}
+
+#battery.warning:not(.charging) {
+  background: #f38ba8;
+  color: white;
+  animation-name: blink;
+  animation-duration: 0.5s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}

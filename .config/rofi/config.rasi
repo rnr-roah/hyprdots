@@ -1,0 +1,82 @@
+//@theme "/home/roah/.local/share/rofi/themes/spotlight-dark.rasi"
+//@theme "/home/roah/.local/share/rofi/themes/rounded-gray-dark.rasi"
+//@theme "/home/roah/.local/share/rofi/themes/simple-tokyonight.rasi"
+//@theme "/home/roah/.local/share/rofi/themes/launchpad.rasi"
+//@theme "/home/roah/.local/share/rofi/themes/rounded-nord-dark.rasi"
+//@theme "/home/roah/.local/share/rofi/themes/nord.rasi"
+//@theme "/usr/share/rofi/themes/sidebar.rasi"
+//@theme "/home/roah/.local/share/rofi/themes/rounded-gray-dark.rasi"
+//@theme "/home/roah/.local/share/rofi/themes/rounded-purple-dark.rasi"
+//@theme "/home/roah/.local/share/rofi/themes/rounded-blue-dark.rasi"
+//@theme "/home/roah/.local/share/rofi/themes/simple-tokyonight.rasi"
+//@theme "/home/roah/.local/share/rofi/themes/rounded-blue-dark.rasi"
+//@theme "/home/roah/.local/share/rofi/themes/simple-tokyonight.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/rounded-blue-dark.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/rounded-gray-dark.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/rounded-blue-dark.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/windows11-grid-dark.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/launchpad.rasi"
+
+//@theme "/usr/share/rofi/themes/sidebar.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/squared-nord.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/nord.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/rounded-nord-dark.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/rounded-gray-dark.rasi"
+
+//@theme "/usr/share/rofi/themes/fullscreen-preview.rasi"
+
+//@theme "/usr/share/rofi/themes/glue_pro_blue.rasi"
+
+//@theme "/usr/share/rofi/themes/paper-float.rasi"
+
+//@theme "/usr/share/rofi/themes/sidebar-v2.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/launchpad.rasi"
+
+//@theme "/usr/share/rofi/themes/sidebar.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/windows11-grid-dark.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/squared-nord.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/spotlight-dark.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/rounded-nord-dark.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/simple-tokyonight.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/rounded-nord-dark.rasi"
+@import "/home/roah/.config/rofi/colors.rasi"
+//@theme "/home/roah/.config/rofi/themes/rounded-nord-dark.rasi"
+//@theme "/home/roah/.config/rofi/themes/simple-tokyonight.rasi"
+
+//@theme "/usr/share/rofi/themes/glue_pro_blue.rasi"
+
+//@theme "/usr/share/rofi/themes/fullscreen-preview.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/windows11-list-dark.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/squared-nord.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/spotlight-dark.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/launchpad.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/simple-tokyonight.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/rounded-orange-dark.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/matugen.rasi"
+
+//@theme "/home/roah/.config/rofi/themes/rounded-nord-dark.rasi"
+
+@theme "/home/roah/.config/rofi/themes/matugen.rasi"

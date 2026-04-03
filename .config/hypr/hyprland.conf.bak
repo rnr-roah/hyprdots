@@ -1,0 +1,415 @@
+
+########################################################################################
+#  _   ___   ______  ____  _        _    _   _ ____
+# | | | \ \ / /  _ \|  _ \| |      / \  | \ | |  _ \
+# | |_| |\ V /| |_) | |_) | |     / _ \ |  \| | | | |
+# |  _  | | | |  __/|  _ <| |___ / ___ \| |\  | |_| |
+# |_| |_| |_| |_|   |_| \_\_____/_/   \_\_| \_|____/
+# -config by roah
+# github : https://github.com/rnr-roah
+########################################################################################
+
+
+
+# See https://wiki.hyprland.org/Configuring/Monitors/
+#monitor=,preferred,auto,auto
+monitor=eDP-1, 2880x1800, 0x0, 1.50
+#For apps
+xwayland {
+  force_zero_scaling = true
+}
+#variable frame rate
+vfr= true
+
+# See https://wiki.hyprland.org/Configuring/Keywords/ for more
+
+# Execute your favorite apps at launch
+# exec-once = waybar & hyprpaper & firefox
+# exec-once = waybar & hyprpaper & firefox
+exec-once = pypr
+exec-once = swaync
+exec-once = swayosd-server #this is for the volume, brightness etc popup thing
+#exec-once = hyprpaper &hyprpaper
+#exec-execonce = waypaper --restorei
+exec-once = swaybg -i /home/roah/Wallpapers/default/background.png -m fill &
+# Select a wallpaper and immediately set it with swaybg
+#swaybg -i "$(./hellpaper ~/Wallpapers)" -m fill
+
+exec-once = discord --start-minimized
+#exec-once = battery-notify
+exec-once = ~/.config/hypr/scripts/battery-watcher.sh
+exec-once = /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+exec-once = hyprlock & hypridle & waybar & nm-applet & blueman-applet
+exec-once = kdeconnect-indicator
+exec-once = thunderbird --headless
+#exec-once = localsend
+#exec-once = xfce4-power-manager
+#### Needed for Blur in Swaync/Notification Center ####
+# layerrule = blur, swaync-control-center
+# layerrule = blur, swaync-notification-window
+
+# layerrule = ignorezero, swaync-control-center
+# layerrule = ignorezero, swaync-notification-window
+
+# layerrule = ignorealpha 0.5, swaync-control-center
+# layerrule = ignorealpha 0.5, swaync-notification-window
+
+# Source a file (multi-file configs)
+# source = ~/.config/hypr/myColors.conf
+# source = ~/.config/hypr/myColors.conf
+
+layerrule = blur on, match:namespace ^swaync-control-center$
+layerrule = blur on, match:namespace ^swaync-notification-window$
+
+layerrule = ignore_alpha 0.0, match:namespace ^swaync-control-center$
+layerrule = ignore_alpha 0.0, match:namespace ^swaync-notification-window$
+
+#permission = regex, permission, mode
+permission = .* , screencopy, deny
+
+# Some default env vars.
+env = XCURSOR_SIZE,24
+
+# For all categories, see https://wiki.hyprland.org/Configuring/Variables/
+input {
+    kb_layout = us
+    kb_variant =
+    kb_model =
+    kb_options =
+    kb_rules =
+
+    follow_mouse = 1
+
+    touchpad {
+        natural_scroll = yes
+    }
+
+    sensitivity = 0 # -1.0 - 1.0, 0 means no modification.
+}
+
+general {
+    # See https://wiki.hyprland.org/Configuring/Variables/ for more
+
+    gaps_in = 2
+    gaps_out = 5
+    border_size = 1
+    col.active_border = rgba(33ccffee) rgba(00ff99ee) 45deg
+    col.inactive_border = rgba(595959aa)
+    layout = dwindle
+    allow_tearing = false
+}
+
+decoration {
+    # See https://wiki.hyprland.org/Configuring/Variables/ for more
+    rounding = 10
+    #screen_shader = /home/roah/.config/hypr/Scripts/grayscale.glsl
+    blur {
+        enabled = true
+        size = 15
+        passes = 2
+	ignore_opacity = true
+	noise = 0.01
+	contrast = 0.8
+	xray = false
+	new_optimizations = true
+    }
+   dim_inactive = false
+   active_opacity = 1 
+   inactive_opacity = 0.95
+
+}
+
+# animations {
+#     enabled = yes
+
+#     # Some default animations, see https://wiki.hyprland.org/Configuring/Animations/ for more
+
+#     bezier = myBezier, 0.05, 0.9, 0.1, 1.05
+
+#     animation = windows, 1, 7, myBezier
+#     animation = windowsOut, 1, 7, default, popin 80%
+#     animation = border, 1, 10, default
+#     animation = borderangle, 1, 8, default
+#     animation = fade, 1, 7, default
+#     animation = workspaces, 1, 6, default
+# }
+
+animations {
+    enabled = yes
+
+    # Faster but smooth curve
+    bezier = smoothOut, 0.25, 1, 0.5, 1
+
+    animation = windows, 1, 3, smoothOut
+    animation = windowsOut, 1, 4, smoothOut, popin 85%
+    animation = border, 1, 6, default
+    animation = borderangle, 1, 5, default
+    animation = fade, 1, 2, default
+    animation = workspaces, 1, 3, smoothOut
+}
+
+
+# animations {
+#     enabled = yes
+
+#     # Fast acceleration
+#     bezier = swift, 0.2, 0.9, 0.3, 1.0
+
+#     animation = windows, 1, 3, swift
+#     animation = windowsOut, 1, 3, swift, popin 85%
+#     animation = border, 1, 5, default
+#     animation = borderangle, 1, 4, default
+#     animation = fade, 1, 2, default
+#     animation = workspaces, 1, 3, swift
+# }
+
+
+
+
+dwindle {
+    # See https://wiki.hyprland.org/Configuring/Dwindle-Layout/ for more
+    pseudotile = yes # master switch for pseudotiling. Enabling is bound to mainMod + P in the keybinds section below
+    preserve_split = yes # you probably want this
+}
+
+master {
+    # See https://wiki.hyprland.org/Configuring/Master-Layout/ for more
+    new_on_active = true
+}
+
+gestures {
+    # See https://wiki.hyprland.org/Configuring/Variables/ for more
+    workspace_swipe_touch = on
+}
+
+# Example per-device config
+# See https://wiki.hyprland.org/Configuring/Keywords/#executing for more
+device:epic-mouse-v1 {
+    # sensitivity = -o.5
+}
+
+# Example windowrule v1
+# windowrule = float, ^(kitty)$
+# Example windowrule v2
+# windowrulev2 = float,class:^(kitty)$,title:^(kitty)$
+# See https://wiki.hyprland.org/Configuring/Window-Rules/ for more
+#windowrulev2 = float,class:^(shutdown)$,title:^(alacritty)$
+# windowrule=float, class:kitty, title:kitty
+# windowrule=float, class:feh, title:feh
+# windowrule=float, class:mpv, title:mpv
+# windowrule=float, class:it.mijorus.smile, title:Smile
+# windowrule=float, class:chrome-google.com__-Default, title:google.com_/
+# windowrule=float, class:org.pulseaudio.pavucontrol, title:Volume Control
+windowrule = float on, match:class ^alacritty$
+windowrule = float on, match:class ^feh$
+windowrule = float on, match:class ^mpv$
+windowrule = float on, match:class ^it.mijorus.smile$
+windowrule = float on, match:class ^chrome-google.com__-Default$
+windowrule = float on, match:class ^chrome-web.whatsapp.com__-Default$
+windowrule = float on, match:class ^org.pulseaudio.pavucontrol$
+windowrule = float on, match:class ^micro$
+windowrule = float on, match:class ^scratchpad$
+
+
+$scratchpad = class:^(scratchpad)$
+$scratchpadsize = size 60% 65%
+# windowrulev2 = float,$scratchpad
+# windowrulev2 = $scratchpadsize,$scratchpad
+# windowrulev2 = workspace special silent,$scratchpad
+# windowrulev2 = center,$scratchpad
+
+# $alacrittyscratchpad = class:^(alacritty)$
+# windowrulev2 = float,$alacrittyscratchpad
+# windowrulev2 = $scratchpadsize,$alacrittyscratchpad
+# windowrulev2 = workspace special silent,$alacrittyscratchpad
+# windowrulev2 = center,$alacrittyscratchpad
+
+# $rangerscratchpad = class:^(ranger)$
+# windowrulev2 = float,$rangerscratchpad
+# windowrulev2 = $scratchpadsize,$rangerscratchpad
+# # windowrulev2 = workspace special silent,$rangerscratchpad
+# # windowrulev2 = center,$rangerscratchpad
+
+# $wifiscratchpad = class:^(wifi)$
+# # windowrulev2 = float,$wifiscratchpad
+# # windowrulev2 = $scratchpadsize,$wifiscratchpad
+# # windowrulev2 = workspace special silent,$wifiscratchpad
+# # windowrulev2 = center,$wifiscratchpad
+
+# $pavucontrolscratchpad = class:^(pavucontrol)$
+# # windowrulev2 = float,$pavucontrolscratchpad
+# # windowrulev2 = $scratchpadsize,$pavucontrolscratchpad
+# # windowrulev2 = workspace special silent,$pavucontrolscratchpad
+# # windowrulev2 = center,$pavucontrolscratchpad
+
+# $rofiscratchpad = class:^(rofi)$
+# # windowrulev2 = float,$rofiscratchpad
+# # windowrulev2 = $scratchpadsize,$rofiscratchpad
+# # windowrulev2 = workspace special silent,$rofiscratchpad
+# # windowrulev2 = center,$rofiscratchpad
+
+# $tofiscratchpad = class:^(tofi)$
+# # windowrulev2 = float,$tofiscratchpad
+# # windowrulev2 = $scratchpadsize,$tofiscratchpad
+# # windowrulev2 = workspace special silent,$tofiscratchpad
+# # windowrulev2 = center,$tofiscratchpad
+
+# $microscratchpad = class:^(micro)$
+# # windowrulev2 = float,$microscratchpad
+# # windowrulev2 = $scratchpadsize,$microscratchpad
+# # windowrulev2 = workspace special silent,$microscratchpad
+# # windowrulev2 = center,$microscratchpad
+
+# $googlescratchpad = class:^(google)$
+# # windowrulev2 = float,$googlescratchpad
+# # windowrulev2 = $scratchpadsize,$googlescratchpad
+# # windowrulev2 = workspace special silent,$googlescratchpad
+# # windowrulev2 = center,$googlescratchpad
+
+# $googlescratchpad = class:^(whatsapp)$
+# # windowrulev2 = float,$whatsappscratchpad
+# # windowrulev2 = $scratchpadsize,$whatsappscratchpad
+# # windowrulev2 = workspace special silent,$whatsappscratchpad
+# # windowrulev2 = center,$whatsappscratchpad
+
+
+
+# See https://wiki.hyprland.org/Configuring/Keywords/ for more
+$mainMod = SUPER
+#$mainMod = Alt
+
+# Example binds, see https://wiki.hyprland.org/Configuring/Binds/ for more
+#bind = $mainMod SHIFT, W, exec, ~/.config/hypr/scripts/change_wallpaper.sh
+#bind = Alt, W, exec, ~/Wallpapers/wallpaper-selector.sh
+#bind = Alt, W, exec, swaybg -i "$(hellpaper ~/Wallpapers)" -m fill
+bind = Alt, W, exec, ~/.config/hypr/scripts/wallpaper.sh
+bind =  $mainMod, M, exec, ~/.config/hypr/scripts/minimize.sh
+bind =  $mainMod SHIFT, A, exec, ~/.config/hypr/scripts/maximize.sh
+bind = $mainMod, Tab,exec, hyprctl getoption general:layout | grep -q 'dwindle' && hyprctl keyword general:layout master || hyprctl keyword general:layout dwindle
+bind = $mainMod, Return, exec, kitty
+bind = $mainMod SHIFT, N, exec, swaync-client -op
+bind = $mainMod, L, exec, hyprlock
+bind = $mainMod SHIFT, C, exec, COLOR="$(hyprpicker -r)"; echo -n "$COLOR" | wl-copy; notify-send "Picked Color" "$COLOR"
+bind = $mainMod, B, exec, zen-browser
+bind = $mainMod SHIFT, B, exec, chromium
+bind = $mainMod, R, exec, nautilus
+bind = $mainMod, Q, killactive, 
+bind = $mainMod SHIFT, Q, exit, 
+bind = $mainMod, Space, togglefloating, 
+bind = $mainMod SHIFT, Space, exec, ~/.config/hypr/scripts/toggleallfloat.sh 
+bind = Control Shift, Escape, exec, kitty -e htop 
+bind = Alt, Space, exec, rofi -show drun -show-icons
+bind = $mainMod Shift, W, exec, pkill waybar ; waybar &
+bind = Alt, Tab, exec, rofi -show window
+#bind = $mainMod, R, exec, tofi-drun --drun-launch=true
+bind = $mainMod, P, pseudo, # dwindle
+bind = $mainMod, J, togglesplit, # dwindle
+bind = $mainMod, F, fullscreen, 1
+bind = $mainMod SHIFT, F, fullscreen, 0
+bind=  $mainMod, S,layoutmsg,swapwithmaster master
+bind=  $mainMod, X,layoutmsg,cyclenext
+bind=  $mainMod, Z,layoutmsg,cycleprev
+bind = $mainMod SHIFT, P, exec, alacritty -e shut-down class 'shutdown'
+bind = $mainMod SHIFT, E, exec, kitty -e sudo vim /home/roah/.config/hypr/hyprland.conf
+bind = $mainMod, C, exec, bash /home/roah/.config/scripts/screenrecorder.sh
+# Scratcpad through pyprland bindings
+#bind = $mainMod, R, exec, pypr toggle tofi && hyprctl dispatch bringactivetotop
+bind = $mainMod SHIFT, Return, exec, pypr toggle alacritty && hyprctl dispatch bringactivetotop
+bind = $mainMod SHIFT, R, exec, pypr toggle ranger && hyprctl dispatch bringactivetotop
+bind = $mainMod SHIFT, S, exec, pypr toggle pavucontrol && hyprctl dispatch bringactivetotop
+bind = $mainMod, N, exec, pypr toggle micro && hyprctl dispatch bringactivetotop
+bind = $mainMod, G, exec, pypr toggle google && hyprctl dispatch bringactivetotop
+bind = $mainMod SHIFT, M, exec, pypr toggle whatsapp && hyprctl dispatch bringactivetotop
+# Move focus with mainMod + arrow keys
+bind = $mainMod, left, movefocus, l
+bind = $mainMod, right, movefocus, r
+bind = $mainMod, up, movefocus, u
+bind = $mainMod, down, movefocus, d
+bind = $mainMod, A, resizeactive, -30 0
+bind = $mainMod, D, resizeactive,  30 0
+bind = $mainMod, W, resizeactive,  0 -30
+bind = $mainMod, E, resizeactive,  0 30
+bind = $mainMod, J, movewindow, l
+bind = $mainMod, K, movewindow, r
+bind = $mainMod, H, movewindow, u
+bind = $mainMod, L, movewindow, d 
+# Switch workspaces with mainMod + [0-9]
+bind = $mainMod, 1, workspace, 1
+bind = $mainMod, 2, workspace, 2
+bind = $mainMod, 3, workspace, 3
+bind = $mainMod, 4, workspace, 4
+bind = $mainMod, 5, workspace, 5
+bind = $mainMod, 6, workspace, 6
+bind = $mainMod, 7, workspace, 7
+bind = $mainMod, 8, workspace, 8
+bind = $mainMod, 9, workspace, 9
+bind = $mainMod, 0, workspace, 10
+
+# Move active window to a workspace with mainMod + SHIFT + [0-9]
+bind = $mainMod SHIFT, 1, movetoworkspace, 1
+bind = $mainMod SHIFT, 2, movetoworkspace, 2
+bind = $mainMod SHIFT, 3, movetoworkspace, 3
+bind = $mainMod SHIFT, 4, movetoworkspace, 4
+bind = $mainMod SHIFT, 5, movetoworkspace, 5
+bind = $mainMod SHIFT, 6, movetoworkspace, 6
+bind = $mainMod SHIFT, 7, movetoworkspace, 7
+bind = $mainMod SHIFT, 8, movetoworkspace, 8
+bind = $mainMod SHIFT, 9, movetoworkspace, 9
+bind = $mainMod SHIFT, 0, movetoworkspace, 10
+
+# Scroll through existing workspaces with mainMod + scroll
+bind = $mainMod, mouse_down, workspace, e+1
+bind = $mainMod, mouse_up, workspace, e-1
+
+# Move/resize windows with mainMod + LMB/RMB and dragging
+bindm = $mainMod, mouse:272, movewindow
+bindm = $mainMod, mouse:273, resizewindow
+bindm = , mouse:276, movewindow
+bindm = , mouse:275, resizewindow
+
+
+#Binding for the fn keys and swayosd/nc client for popup
+#used wev to find key names
+bind = $mainMod, C, exec, hyprshot -z -m region --clipboard-only
+
+bind = $mainMod, Print, exec, hyprshot -m region -o ~/screenshots
+bind = , Print, exec, hyprshot -z -m output -m active -o ~/screenshots
+bind = $mainMod, F12, exec, hyprshot -z -m region -o ~/screenshots
+bind = , F12, exec, hyprshot -m output -m active -o ~/screenshots
+# Brightness
+bind = , XF86MonBrightnessUp, exec, swayosd-client --brightness=raise
+bind = , XF86MonBrightnessDown, exec, swayosd-client --brightness=lower
+bind = , F4, exec, swayosd-client --brightness=raise
+bind = , F3, exec, swayosd-client --brightness=lower
+# Volume
+bind = , XF86AudioRaiseVolume, exec, swayosd-client --output-volume=raise & canberra-gtk-play -i audio-volume-change
+bind = , XF86AudioLowerVolume, exec, swayosd-client --output-volume=lower & canberra-gtk-play -i audio-volume-change
+
+bind = , XF86AudioMute,        exec, swayosd-client --output-volume=mute-toggle & canberra-gtk-play -i audio-volume-change
+
+bind = , F8, exec, swayosd-client --output-volume=raise & canberra-gtk-play -i audio-volume-change
+
+bind = , F7, exec, swayosd-client --output-volume=lower & canberra-gtk-play -i audio-volume-change
+
+bind = , F6, exec, swayosd-client --output-volume=mute-toggle & canberra-gtk-play -i audio-volume-change
+
+
+bind = , F2, exec, it.mijorus.smile
+
+
+# Mic
+bind = , XF86AudioMicMute,    exec,  swayosd-client --input-volume=mute-toggle & canberra-gtk-play -i audio-volume-change
+
+#bind = , F9,    exec,  swayosd-client --input-volume=mute-toggle & canberra-gtk-play -i audio-volume-change
+
+
+
+#Playerctl
+bind = , XF86AudioPlay, exec, swayosd-client --playerctl=play-pause
+bind = , F10, exec, swayosd-client --playerctl=play-pause
+
+#For Copilot key
+bind = SUPER SHIFT, F23, exec, notify-send "Copilot" "Three keys pretending to be one"
+bindr= SUPER SHIFT CONTROL, Control_R, exec, notify-send "Copilot" "Caught you."
+
+

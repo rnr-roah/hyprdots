@@ -1,0 +1,7 @@
+#!/bin/bash
+echo "Proceed with backup?"
+echo "Enter to continue, ctrl + c to cancel"
+read enter
+sudo cp -r -v ~/.config/awesome ~/.config/awesome_backup
+echo "Backup completed"
+exit

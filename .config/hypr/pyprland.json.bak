@@ -1,0 +1,67 @@
+{
+	"pyprland": {
+		"plugins": ["scratchpads", 
+			"magnify",
+			"expose",
+                        "fetch_client_menu",
+                        "lost_windows",
+                        "scratchpads",
+                        "shift_monitors",
+                        "toggle_special",
+                        "workspaces_follow_focus"]
+	},
+	"scratchpads": {
+
+	  "alacritty":{
+		"command": "alacritty --class scratchpad",
+		"margin": 50,
+		"unfocus": "hide",
+		"animation" : "fromTop"
+       	  },
+          "micro":{
+	       "command": "kitty --class scratchpad -e micro",
+	       "margin" : 50,
+	       "unfocus": "hide",
+	       "animation": "frombottom"
+	  },
+	  "ranger":{
+	 	  "command": "alacritty --class scratchpad -e ranger",
+		  "margin": 50,
+		  "unfocus": "hide",
+		  "animation" : "fromTop"
+	  },
+	  "google":{
+	 	  "command": "chromium --app=https://google.com --user-data-dir=/home/roah/.local/share/webapps-profiles/google --class=google --window-size=900,600",
+		  "margin": 50,
+		  "unfocus": "hide",
+		  "animation" : "fromTop"
+	  },
+	  "whatsapp":{
+	 	  "command": "chromium --app=https://web.whatsapp.com --user-data-dir=/home/roah/.local/share/webapps-profiles/whatsapp --class=whatsapp --window-size=900,900",
+		  "margin": 50,
+		  "unfocus": "hide",
+		  "animation" : "fromLeft"
+	  },
+	  "pavucontrol": {
+		  "command" : "pavucontrol",
+		  "margin": 50,
+		  "unfocus": "hide",
+		  "animation" : "fromTop"
+	  },
+          "wifi": {
+		  "command" : "alacritty -e wifi",
+		  "margin": 20,
+		  "unfocus": "hide",
+		  "animation" : "fromTop"
+	  },
+
+	  "htop": {
+                  "command" : "alacritty --class scratchpad -e htop",
+		  "margin": 50,
+		  "unfocus" : "hide",
+		  "animation" : "fromtop"
+	  }
+	  
+        }
+}
+

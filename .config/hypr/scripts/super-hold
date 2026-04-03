@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# side button = 275
+BUTTON=275
+
+# because of ydotool’s lack of actual key-state tracking,
+# we keep state internally
+STATEFILE="/tmp/superhold.state"
+
+if grep -q "down" "$STATEFILE" 2>/dev/null; then
+    # release
+    ydotool key 125:0
+    echo "up" > "$STATEFILE"
+else
+    # press
+    ydotool key 125:1
+    echo "down" > "$STATEFILE"
+fi
+

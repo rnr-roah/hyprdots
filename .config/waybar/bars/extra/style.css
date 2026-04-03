@@ -1,0 +1,237 @@
+/* # By Roah on Github https://github.com/rnr-roah */
+@define-color background #08080B;
+@define-color background-alt alpha(@background, .6);
+@define-color background-alt2 alpha(@background, .3);
+@define-color text #ffffff;
+@define-color text-alt #ffffff;
+@define-color selected alpha(@text-alt, .4);
+@define-color hover alpha(@selected, .4);
+
+* {
+  border: none;
+  font-family: 'JetBrainsMono Nerd Font' , 'Symbols Only';
+  font-size: 14px;
+  font-feature-settings: '"zero", "ss01", "ss02", "ss03", "ss04", "ss05", "cv31"';
+  min-height: 40px;
+  min-width: 80px;
+  transition: 60ms;
+}
+* {
+    font-family: "Symbols Nerd Font Mono", "Symbols Nerd Font", "Nerd Font Complete", "Nerd Font", monospace;
+}
+
+window#waybar {
+  background: rgba(25, 26, 36, 0.0); /*change the transparency here to change the bar*/
+}
+
+
+
+
+/*Joining the brightness and sound module together with css*/
+#backlight, #pulseaudio, #battery,#network, #tray, #custom-spacer1{
+  background-color: @background-alt;
+  font-size: 12px;
+  opacity: 1;
+  color: #c0caf5;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  padding-top: 0px;
+  padding-left: 10px;
+  padding-right: 10px;
+
+}
+#custom-spacer1{
+  background-color: @background-alt;
+  font-size: 12px;
+  opacity: 1;
+  color: #c0caf5;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  padding-top: 0px;
+  padding-left: 10px;
+  padding-right: 5px;
+
+}
+#backlight{
+  border-radius: 0px;
+ /* border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;*/
+  margin-right: -5px;
+}
+#pulseaudio {
+  border-radius: 0px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  margin-right: -10px;
+}
+#battery {
+  border-radius: 0px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  margin-right: -10px;
+}
+#network {
+  border-radius: 0px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  margin-right: -10px;
+}
+#tray {
+  border-radius: 0px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  margin-right: 0px;
+}
+/**/
+
+
+/*For notification and clock*/
+#cpu{
+  border-radius: 0px;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  background-color: @background;
+  color: #c0caf5;
+  margin-top: 5px;
+  opacity: 0.75;
+  margin-bottom: 5px;
+	margin-right: -10px;
+  padding-top: 1px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+#clock, #memory{
+  border-radius: 0px;
+  color: #c0caf5;
+  margin-top: 5px;
+  background-color: @background;
+  opacity: 0.75;
+  margin-bottom: 5px;
+	margin-right: -10px;
+  padding-left: 7px;
+  padding-right: 7px;
+}
+
+#custom-spacer2{
+  border-radius: 0px;
+  color: #c0caf5;
+  margin-top: 5px;
+  background-color: @background;
+  opacity: 0.75;
+  margin-bottom: 5px;
+	margin-right: -10px;
+  padding-left: 7px;
+  padding-right: 7px;
+}
+#temperature{
+  color: #c0caf5;
+  margin-top: 5px;
+  background-color: @background;
+  opacity: 0.75;
+  margin-bottom: 5px;
+	margin-right: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+
+}
+#custom-lock, #custom-logout, #custom-shutdown, #custom-reboot {
+  border-radius: 10px;
+  background-color: @background-alt;
+  color: #F27E35;
+  opacity: 1;
+  margin-top: 5px;
+  margin-bottom: 5px;
+	margin-right: 5px;
+  padding-top: 0px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+
+
+#custom-power_mode{
+  border-radius: 0px;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  background-color: @background;
+  color: #c0caf5;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-left: 10px;
+  margin-right: 0px;
+  opacity: 0.75;
+  padding-top: 1px;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 16px;
+}
+#custom-window-name {
+  /*color: #91e0ee;*/
+	color: white;
+	opacity:0.5;
+}
+
+#workspaces {
+  border-radius: 10px;
+  background-color: transparent;
+  color: grey;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-right: 10px;
+  padding-top: 1px;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 8px;
+  margin-left: 5px;
+}
+#workspaces button {
+  background: transparent;
+  color: white;
+  opacity: 0.4;
+  border-radius: 100px;
+}
+
+#workspaces button.active {
+  /*color: #c0caf5;*/
+	color:white;
+	opacity:0.6;
+	background: @background-alt2;
+}
+
+#custom-playerctl{
+  border-radius: 10px;
+  background-color: @background-alt;
+  opacity: 0.75;
+  color: #c0caf5;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-right: 10px;
+}
+
+@keyframes blink {
+  to {
+    background-color: #ffffff;
+    color: black;
+  }
+}
+
+#battery.warning:not(.charging) {
+  background: #f38ba8;
+  color: white;
+  animation-name: blink;
+  animation-duration: 0.5s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+#tray{
+  padding-right: 8px;
+  padding-left: 8px;
+}
+
+

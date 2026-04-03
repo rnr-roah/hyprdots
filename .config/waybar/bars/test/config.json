@@ -1,0 +1,71 @@
+{
+  "modules-left": ["hyprland/workspaces"],
+  "modules-center": [
+    "custom/cpu",
+    "custom/memory",
+    "custom/temp",
+    "custom/trigger",
+    "custom/disk",
+    "custom/network"
+  ],
+  "modules-right": [],
+
+  "custom/trigger": {
+    "exec": "~/.config/waybar/bars/test/trigger.sh",
+    "interval": "once",
+    "return-type": "json",
+    "signal": 8,
+    "on-click": "~/.config/waybar/bars/test/toggle.sh",
+    "tooltip": false
+  },
+
+  "custom/cpu": {
+    "exec": "~/.config/waybar/bars/test/cpu.sh",
+    "interval": "once",
+    "return-type": "json",
+    "signal": 9
+  },
+
+  "custom/memory": {
+    "exec": "~/.config/waybar/bars/test/memory.sh",
+    "interval": "once",
+    "return-type": "json",
+    "signal": 10
+  },
+
+  "custom/temp": {
+    "exec": "~/.config/waybar/bars/test/temp.sh",
+    "interval": "once",
+    "return-type": "json",
+    "signal": 11
+  },
+
+  "custom/disk": {
+    "exec": "~/.config/waybar/bars/test/disk.sh",
+    "interval": "once",
+    "return-type": "json",
+    "signal": 12
+  },
+
+  "custom/network": {
+    "exec": "~/.config/waybar/bars/test/network.sh",
+    "interval": "once",
+    "return-type": "json",
+    "signal": 13
+  },
+
+  "hyprland/workspaces": {
+    "format": "{icon}",
+    "on-click": "activate",
+    "persistent_workspaces": {
+      "1": [],
+      "2": [],
+      "3": []
+    },
+    "format-icons": {
+      "1": "󰲠",
+      "2": "󰲢",
+      "3": "󰲤"
+    }
+  }
+}

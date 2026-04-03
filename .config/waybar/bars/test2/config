@@ -1,0 +1,90 @@
+{
+    "layer": "top",
+    "position": "right",
+    "width": 48,
+    "exclusive": true,
+    "passthrough": false,
+    "gtk-layer-shell": true,
+    "reload_style_on_change": true,
+    "modules-left": [
+        "custom/logo",
+        "hyprland/workspaces",
+        "custom/scrolling-indicator"
+    ],
+    "modules-right": [
+        "battery",
+        "backlight",
+        "network",
+        "bluetooth",
+        "pulseaudio",
+        "clock",
+        "tray"
+    ],
+    "custom/logo": {
+        "format": "󱄅",
+        "tooltip": false
+    },
+    "hyprland/workspaces": {
+        "format": "{icon}",
+        "on-click": "activate",
+        "sort-by-number": true,
+        "format-icons": {
+            "active": "●",
+            "default": "○",
+            "empty": "·"
+        },
+        "persistent-workspaces": {}
+    },
+    "custom/scrolling-indicator": {
+	"format": "<span>{}</span>",
+	"exec": "/tmp/test-indicator.sh",
+	"interval": 5,
+	"return-type": "json",
+	"tooltip-format": "{}"
+    },
+    "battery": {
+        "format": "{icon}",
+        "format-icons": ["󰂎","󰁺","󰁻","󰁼","󰁽","󰁾","󰁿","󰂀","󰂁","󰂂","󰁹"],
+        "format-charging": "󰂄",
+        "format-plugged": "󰚥",
+        "tooltip-format": "{capacity}% — {timeTo}",
+        "states": {"warning": 30, "critical": 15}
+    },
+    "backlight": {
+        "format": "{icon}",
+        "format-icons": ["󰃞","󰃟","󰃠"],
+        "tooltip-format": "{percent}%"
+    },
+    "network": {
+        "format-wifi": "󰤨",
+        "format-ethernet": "󰈀",
+        "format-disconnected": "󰤭",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%)",
+        "tooltip-format-ethernet": "{ifname}",
+        "tooltip-format-disconnected": "Disconnected"
+    },
+    "bluetooth": {
+        "format": "󰂯",
+        "format-connected": "󰂱",
+        "format-disabled": "󰂲",
+        "tooltip-format": "{controller_alias}\n{num_connections} connected",
+        "tooltip-format-connected": "{device_enumerate}",
+        "tooltip-format-enumerate-connected": "  {device_alias}"
+    },
+    "pulseaudio": {
+        "format": "{icon}",
+        "format-muted": "󰖁",
+        "format-icons": {"default": ["󰕿","󰖀","󰕾"]},
+        "on-click": "pavucontrol",
+        "tooltip-format": "{volume}% — {desc}"
+    },
+    "clock": {
+        "format": "{:%H\n%M}",
+        "tooltip-format": "{:%A\n%d %B %Y}"
+    },
+    "tray": {
+        "icon-size": 16,
+        "spacing": 8,
+        "show-passive-items": true
+    }
+}

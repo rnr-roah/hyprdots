@@ -1,0 +1,180 @@
+{
+  "layer": "top",
+  "position": "bottom",
+  "exclusive": true,
+    "height": 5,
+    "modules-left": ["custom/power_mode","custom/tab","custom/nightlight","hyprland/workspaces"],
+
+    "modules-center": ["clock"],
+
+    "modules-right": ["memory","cpu","battery","tray","custom/spacer2", "custom/notifications"],
+  
+  
+"custom/notifications": { 
+	"exec": "swaync-client -swb", 
+	"return-type": "json", 
+	"format": "{icon}",
+	"format-dnd":"dnd",
+	"format-icons": { 
+		"notification": "   󰂚", 
+		"none": "   ",
+		"dnd-none": "   󰂛",
+		"dnd-notification": "   󰂛" 
+	}, 
+	"on-click": "swaync-client -t" 
+},
+    
+"hyprland/workspaces": {
+      "format": "{icon}",
+      "on-click": "activate",
+      "all-outputs": true,
+      "persistent_workspaces" :{
+                            "1": [],
+	 		    "2": [],
+	 		    "3": [],
+	 		    "4": [],
+	 		    "5": [],
+	 		    "6": [],
+	 		    "7": [],
+	 		    "8": [],
+	 		    "9": [],
+	 		    "10": []
+        },
+        "format-icons": {
+                "1": "󰎦",
+             		"2": "󰎩",
+             		"3": "󰎬" ,
+             		"4": "󰎮",
+             		"5": "󰎰",
+             		"6": "󰎵",
+             		"7": "󰎸",
+             		"8": "󰎻",
+             		"9": "󰎾",
+             		"10":"󱗝"
+          }
+    },
+    "clock": {
+      // "format-alt": "{:%I:%M %p}",
+  "format": "{:%H:%M %p %a %d}",
+      "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+      "on-click-right":"flipclock"
+    },
+    "custom/spacer1": {
+      "format": "|"
+    },
+    "custom/spacer2": {
+      "format": "|"
+    },
+
+    "custom/tab": {
+    "format": "<span color='#9D98F6'>󰔡  </span>",
+    "on-click": "exec ~/.config/waybar/bars/minimal/stop.sh",
+    "tooltip-format": "Switch to Standard Mode"
+  },
+    
+  "custom/nightlight": {
+    "format": " 󰞏 ",
+    "format-alt": "<span color='#F7768E'> 󰯪 </span>",
+    "on-click": "exec ~/.config/waybar/scripts/nightlight.sh"
+  },
+  
+
+
+
+
+    "backlight": {
+      "device": "amdgpu_b10",
+      "format": "<span color='#d9b172'>{icon}</span>",
+      "format-alt": "<span color='#d9b172'>󰃠</span> {percent}%",
+      "format-icons": ["", "", "", "", "", "", "", "", ""],
+      "tooltip-format":"Brightness {percent}%"
+    },
+  
+ 
+    "custom/window-name": {
+    "format": " <b>{}</b>",
+    "interval": 1,
+    "max-length": 20,
+    "exec": "hyprctl activewindow | grep class | awk '{print $2}'"
+  },
+   
+    "battery": {
+      "format": "{icon} ",
+      "format-alt": "<span color='#a8cd76'>{icon} {capacity}% </span>",
+      "on-click-right": "alacritty -e htop",
+      "format-icons": [
+	      "<span color='#f70505'></span>", 
+	      "<span color='#f27e35'></span>", 
+	       "", "", ""],
+      "format-charging": "<span color='#a8cd76'>{capacity}%</span>"
+    },
+
+
+    "network": {
+    "format-wifi": "<span color='#90cdfa'>  </span>",
+    "format-alt" : "<span foreground='#9ece6a'>󰒢</span> {essid}:{bandwidthTotalBits}",
+    "on-click-right": "kitty -e wifi",
+    "format-ethernet": " wired",
+    "tooltip-format": "{essid} {signalStrength}%",
+    "format-disconnected": "󰖪 "
+  },
+  
+  
+  "custom/power_mode": {
+    "format": "<span>{}</span>",
+    "exec": "~/.config/waybar/scripts/power_mode_toggle.sh",
+    "on-click": "~/.config/waybar/scripts/power_mode_toggle.sh toggle",
+    "interval": 5,
+    "return-type": "json",
+      "tooltip-format": "Power mode: {}"
+  },
+
+
+    "pulseaudio": {
+      "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+      "format": "<span color='#f7768e'>{icon}</span>",
+      "format-alt": "<span color='#f7768e'></span> {volume}%",
+      "format-muted": "<span color='#f7768e'>󰝟</span>",
+      "tooltip-format":"Volume {volume}%",
+      "format-icons": {
+       "headphone": "",
+       "hands-free": "",
+       "headset": "",
+       "phone": "",
+       "portable": "",
+       "car": "",
+      "default": ["󰄰","󰪞","󰪟","󰪠","󰪡","󰪢","󰪣","󰪤","󰪥"] 
+        },
+       "on-click-middle" : "pypr toggle pavucontrol && hyprctl dispatch bringactiveontop"
+    },
+
+    "tray": {
+    "format": "",
+    "icon-size": 12,
+    "reverse-direction": true,
+    "spacing": 12,
+    "show-disconnected": true
+    },
+
+    "memory": {
+    // "format": " {icon} {percentage}% ",
+    "format": " R:{icon} ",
+    "on-click": "pypr toggle htop && hyprctl dispatch bringactiveontop",
+      // "format-icons": ["", "", "", "", "", "", "", "", ""]
+     "format-icons": ["󰄰","󰪞","󰪞","󰪟","󰪠","󰪡","󰪢","󰪣","󰪤","󰪥"]
+    },
+
+
+    "cpu": {
+    // "format": " {icon} {usage}% ",
+    "format": " C:{icon} ",
+    //  "format-icons": ["󰄰","󰪞","󰪞","󰪟","󰪠","󰪡","󰪢","󰪣","󰪤","󰪥"]
+      "format-icons": ["","", "", "", "", "", "", "", ""]
+     },
+
+    // "temperature": {
+    // "critical-threshold": 80,
+    // "format": "<span foreground='#5d73ca'></span> {temperatureC}°C"
+    //  },
+
+}

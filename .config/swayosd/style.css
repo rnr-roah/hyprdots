@@ -1,0 +1,79 @@
+/* === COLORS (from your SwayNC theme) === */
+@define-color background      #08080b;
+@define-color background-alt  #0e0e14;
+@define-color text            #acb0d0;
+@define-color text-alt        #787c99;
+@define-color selected        alpha(@text-alt, .4);
+@define-color hover           alpha(@selected, .4);
+
+/* === UNIVERSAL STYLE === */
+* {
+  all: unset;
+  font-family: "CaskaydiaCove Nerd Font Propo";
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: @text;
+  transition: 200ms;
+}
+
+/* === MAIN OSD WINDOW (volume, brightness, play/pause) === */
+window.osd {
+  background: @background;
+  opacity: 0.85;
+  border-radius: 15px;
+  padding: 5px 5px;
+  border: 2px solid @background;
+  margin: 8px;
+  margin-bottom: 0px;
+  box-shadow: none;
+}
+
+/* Icon (e.g., volume, brightness symbol) */
+window.osd image {
+  margin-bottom: 0px;
+  -gtk-icon-transform: scale(0.7);
+}
+
+/* Label text (like percentage or title) */
+window.osd label {
+  color: @text;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+/* === PROGRESS BAR === */
+progressbar trough {
+  background: @hover;
+  border-radius: 12px;
+  min-height: 12px;
+  margin-right: 5px;
+
+}
+
+progressbar progress {
+  background: @text;
+  border-radius: 12px;
+  min-height: 12px;
+}
+
+/* Text inside progress (rarely used, but themed anyway) */
+progressbar text {
+  color: @text-alt;
+  font-weight: 700;
+}
+
+/* === CUSTOM MESSAGE POPUP (playerctl, custom-message) === */
+window.osd.custom {
+  background: @background-alt;
+  opacity: 0.55;
+  border-radius: 15px;
+  padding: 12px 18px;
+  border: 2px solid @background;
+}
+
+window.osd.custom label {
+  color: @text;
+  font-size: 1rem;
+}
+
+

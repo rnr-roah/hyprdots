@@ -1,0 +1,70 @@
+#!/bin/bash
+clear
+bluetoothctl power on &&
+echo 
+echo "Bluetooth Manager"
+echo "-----------------"
+echo 
+echo "1) Connect to a device *default*"
+echo "2) Turn off bluetooth"
+echo "Enter a number:"
+read ans
+if [[ "$ans" = "1" || "$ans" = "$Return" ]]
+then
+  echo "Connect to a device: 1) Connect to f95 *default* 2) Connect to a new device"
+  echo "Enter a number:"
+  read num
+  case $num in
+    1)
+      bluetoothctl connect C2:4E:66:33:BD:96
+      ;;
+    2)
+      echo 
+      echo "Tips: Stop scan after you spot the device you want to connect with."
+      echo "ctrl + c to stop scanning"
+      echo 
+      bluetoothctl scan on
+      echo "Enter the mac address of device:"
+      echo
+      read mac
+      echo 
+      bluetoothctl trust $mac
+      bluetoothctl pair $mac
+      bluetoothctl connect $mac
+      ;;
+    $Return)
+      bluetoothctl connect C2:4E:66:33:BD:96  
+      ;;
+    *)
+      figlet "Wrong input! Aahoo!!"
+      ;;
+  esac
+elif [[ "$ans" = "2" ]]
+then 
+   bluetoothctl power off
+   echo "Powered off"
+else 
+  clear
+  figlet "Wrong input! Aaahooo!!"
+  sleep 2
+  btman
+fi
+echo "continue?(N/y)"
+read last
+if [[ "$last" = "y" || "$last" = "Y" ]]
+then
+       btman
+elif [[ "$last" = "$Return" ]]
+then
+	exit
+else
+       exit	
+fi
+exit
+
+
+
+
+
+
+

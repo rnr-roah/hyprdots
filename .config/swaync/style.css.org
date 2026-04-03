@@ -1,0 +1,63 @@
+* {
+    font-family: JetBrainsMono Nerd Font, sans-serif;
+    font-size: 13px;
+    color: #e5e5e5;
+}
+
+.control-center, .notification {
+    background: rgba(28, 28, 35, 0.85);
+    border-radius: 14px;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,0.03);
+}
+
+.notification {
+    margin: 8px 0;
+    animation: slidein 0.15s ease-out;
+}
+
+@keyframes slidein {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Title bar of control center */
+.topbar {
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Buttons inside notifications */
+.action-button {
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 6px 10px;
+    margin-top: 6px;
+}
+
+.action-button:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+/* DND switch */
+.dnd {
+    background: rgba(255,255,255,0.05);
+    padding: 8px;
+    border-radius: 12px;
+}
+
+.dnd:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+/* Notification Title */
+.summary {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.body {
+    opacity: 0.85;
+}
+

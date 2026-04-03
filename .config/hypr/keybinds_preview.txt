@@ -1,0 +1,157 @@
+HYPRLAND HOTKEYS PREVIEW
+Generated: Tue Feb 24 09:53:38 PM EST 2026
+==============================================================
+
+==================== WORKSPACES ====================
+MODIFIERS            KEY        ACTION                                  
+------------------------------------------------------------
+SUPER                F          fullscreen, 1                           
+SUPER SHIFT          F          fullscreen, 0                           
+SUPER                D          resizeactive, 30 0                      
+SUPER                W          resizeactive, 0 -30                     
+SUPER                E          resizeactive, 0 30                      
+SUPER                1          workspace, 1                            
+SUPER                2          workspace, 2                            
+SUPER                3          workspace, 3                            
+SUPER                4          workspace, 4                            
+SUPER                5          workspace, 5                            
+SUPER                6          workspace, 6                            
+SUPER                7          workspace, 7                            
+SUPER                8          workspace, 8                            
+SUPER                9          workspace, 9                            
+SUPER                0          workspace, 10                           
+SUPER SHIFT          1          movetoworkspace, 1                      
+SUPER SHIFT          2          movetoworkspace, 2                      
+SUPER SHIFT          3          movetoworkspace, 3                      
+SUPER SHIFT          4          movetoworkspace, 4                      
+SUPER SHIFT          5          movetoworkspace, 5                      
+SUPER SHIFT          6          movetoworkspace, 6                      
+SUPER SHIFT          7          movetoworkspace, 7                      
+SUPER SHIFT          8          movetoworkspace, 8                      
+SUPER SHIFT          9          movetoworkspace, 9                      
+SUPER SHIFT          0          movetoworkspace, 10                     
+SUPER                mouse_down workspace, e+1                          
+SUPER                mouse_up   workspace, e-1                          
+
+==================== APPLICATIONS ====================
+MODIFIERS            KEY        ACTION                                  
+------------------------------------------------------------
+Alt                  W          exec, ~/.config/hypr/scripts/wallpaper.sh
+SUPER                M          exec, ~/.config/hypr/scripts/minimize.sh
+SUPER SHIFT          A          exec, ~/.config/hypr/scripts/maximize.sh
+SUPER                Tab        exec, hyprctl getoption general:layout | grep -q dwindle && hyprctl keyword general:layout master || hyprctl keyword general:layout dwindle
+SUPER                Return     exec, kitty                             
+SUPER SHIFT          N          exec, swaync-client -op                 
+SUPER                L          exec, hyprlock                          
+SUPER SHIFT          C          exec, COLOR=$(hyprpicker -r); echo -n $COLOR | wl-copy; notify-send Picked Color $COLOR
+SUPER                B          exec, zen-browser                       
+SUPER SHIFT          B          exec, chromium                          
+SUPER                R          exec, nautilus                          
+SUPER SHIFT          Space      exec, ~/.config/hypr/scripts/toggleallfloat.sh
+Control Shift        Escape     exec, kitty -e htop                     
+Alt                  Space      exec, rofi -show drun -show-icons       
+SUPER Shift          W          exec, pkill waybar ; waybar &           
+Alt                  Tab        exec, rofi -show window                 
+SUPER SHIFT          P          exec, alacritty -e shut-down class shutdown
+SUPER SHIFT          E          exec, kitty -e sudo vim /home/roah/.config/hypr/modules/
+SUPER                C          exec, bash /home/roah/.config/scripts/screenrecorder.sh
+SUPER SHIFT          Return     exec, pypr toggle alacritty && hyprctl dispatch bringactivetotop
+SUPER SHIFT          R          exec, pypr toggle ranger && hyprctl dispatch bringactivetotop
+SUPER SHIFT          S          exec, pypr toggle pavucontrol && hyprctl dispatch bringactivetotop
+SUPER                N          exec, pypr toggle micro && hyprctl dispatch bringactivetotop
+SUPER                G          exec, pypr toggle google && hyprctl dispatch bringactivetotop
+SUPER SHIFT          M          exec, pypr toggle whatsapp && hyprctl dispatch bringactivetotop
+SUPER                C          exec, hyprshot -z -m region --clipboard-only
+SUPER                Print      exec, hyprshot -m region -o ~/screenshots
+                     Print      exec, hyprshot -z -m output -m active -o ~/screenshots
+SUPER                F12        exec, hyprshot -z -m region -o ~/screenshots
+                     F12        exec, hyprshot -m output -m active -o ~/screenshots
+                     XF86MonBrightnessUp exec, swayosd-client --brightness=raise 
+                     XF86MonBrightnessDown exec, swayosd-client --brightness=lower 
+                     F4         exec, swayosd-client --brightness=raise 
+                     F3         exec, swayosd-client --brightness=lower 
+                     XF86AudioRaiseVolume exec, swayosd-client --output-volume=raise & canberra-gtk-play -i audio-volume-change
+                     XF86AudioLowerVolume exec, swayosd-client --output-volume=lower & canberra-gtk-play -i audio-volume-change
+                     XF86AudioMute exec, swayosd-client --output-volume=mute-toggle & canberra-gtk-play -i audio-volume-change
+                     F8         exec, swayosd-client --output-volume=raise & canberra-gtk-play -i audio-volume-change
+                     F7         exec, swayosd-client --output-volume=lower & canberra-gtk-play -i audio-volume-change
+                     F6         exec, swayosd-client --output-volume=mute-toggle & canberra-gtk-play -i audio-volume-change
+                     F2         exec, it.mijorus.smile                  
+                     XF86AudioMicMute exec, swayosd-client --input-volume=mute-toggle & canberra-gtk-play -i audio-volume-change
+                     XF86AudioPlay exec, swayosd-client --playerctl=play-pause
+                     F10        exec, swayosd-client --playerctl=play-pause
+SUPER SHIFT          F23        exec, notify-send Copilot Three keys pretending to be one
+bindr= SUPER SHIFT CONTROL Control_R  exec, notify-send Copilot Caught you.   
+ALT                  P          exec, hyprctl dispatch togglefloating && hyprctl dispatch pin
+
+==================== WINDOW CONTROL ====================
+MODIFIERS            KEY        ACTION                                  
+------------------------------------------------------------
+SUPER                Q          killactive,                             
+SUPER                Space      togglefloating,                         
+SUPER                F          fullscreen, 1                           
+SUPER SHIFT          F          fullscreen, 0                           
+SUPER                left       movefocus, l                            
+SUPER                right      movefocus, r                            
+SUPER                up         movefocus, u                            
+SUPER                down       movefocus, d                            
+SUPER                A          resizeactive, -30 0                     
+SUPER                D          resizeactive, 30 0                      
+SUPER                W          resizeactive, 0 -30                     
+SUPER                E          resizeactive, 0 30                      
+SUPER                J          movewindow, l                           
+SUPER                K          movewindow, r                           
+SUPER                H          movewindow, u                           
+SUPER                L          movewindow, d                           
+SUPER SHIFT          1          movetoworkspace, 1                      
+SUPER SHIFT          2          movetoworkspace, 2                      
+SUPER SHIFT          3          movetoworkspace, 3                      
+SUPER SHIFT          4          movetoworkspace, 4                      
+SUPER SHIFT          5          movetoworkspace, 5                      
+SUPER SHIFT          6          movetoworkspace, 6                      
+SUPER SHIFT          7          movetoworkspace, 7                      
+SUPER SHIFT          8          movetoworkspace, 8                      
+SUPER SHIFT          9          movetoworkspace, 9                      
+SUPER SHIFT          0          movetoworkspace, 10                     
+bindm = SUPER        mouse:272  movewindow                              
+bindm = SUPER        mouse:273  resizewindow                            
+bindm =              mouse:276  movewindow                              
+bindm =              mouse:275  resizewindow                            
+ALT                  P          exec, hyprctl dispatch togglefloating && hyprctl dispatch pin
+
+==================== PYPRLAND ====================
+MODIFIERS            KEY        ACTION                                  
+------------------------------------------------------------
+SUPER SHIFT          Return     exec, pypr toggle alacritty && hyprctl dispatch bringactivetotop
+SUPER SHIFT          R          exec, pypr toggle ranger && hyprctl dispatch bringactivetotop
+SUPER SHIFT          S          exec, pypr toggle pavucontrol && hyprctl dispatch bringactivetotop
+SUPER                N          exec, pypr toggle micro && hyprctl dispatch bringactivetotop
+SUPER                G          exec, pypr toggle google && hyprctl dispatch bringactivetotop
+SUPER SHIFT          M          exec, pypr toggle whatsapp && hyprctl dispatch bringactivetotop
+
+==================== MEDIA KEYS ====================
+MODIFIERS            KEY        ACTION                                  
+------------------------------------------------------------
+                     XF86MonBrightnessUp exec, swayosd-client --brightness=raise 
+                     XF86MonBrightnessDown exec, swayosd-client --brightness=lower 
+                     XF86AudioRaiseVolume exec, swayosd-client --output-volume=raise & canberra-gtk-play -i audio-volume-change
+                     XF86AudioLowerVolume exec, swayosd-client --output-volume=lower & canberra-gtk-play -i audio-volume-change
+                     XF86AudioMute exec, swayosd-client --output-volume=mute-toggle & canberra-gtk-play -i audio-volume-change
+                     XF86AudioMicMute exec, swayosd-client --input-volume=mute-toggle & canberra-gtk-play -i audio-volume-change
+                     XF86AudioPlay exec, swayosd-client --playerctl=play-pause
+
+==================== FUNCTION KEYS ====================
+MODIFIERS            KEY        ACTION                                  
+------------------------------------------------------------
+SUPER                F12        exec, hyprshot -z -m region -o ~/screenshots
+                     F12        exec, hyprshot -m output -m active -o ~/screenshots
+                     F4         exec, swayosd-client --brightness=raise 
+                     F3         exec, swayosd-client --brightness=lower 
+                     F8         exec, swayosd-client --output-volume=raise & canberra-gtk-play -i audio-volume-change
+                     F7         exec, swayosd-client --output-volume=lower & canberra-gtk-play -i audio-volume-change
+                     F6         exec, swayosd-client --output-volume=mute-toggle & canberra-gtk-play -i audio-volume-change
+                     F2         exec, it.mijorus.smile                  
+                     F10        exec, swayosd-client --playerctl=play-pause
+SUPER SHIFT          F23        exec, notify-send Copilot Three keys pretending to be one
+
+==============================================================

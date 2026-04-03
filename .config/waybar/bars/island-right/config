@@ -1,0 +1,253 @@
+[
+  {
+    "name": "topbar",
+    "layer": "top",
+    "position": "top",
+    "exclusive": true,
+    "height": 20,
+
+    "modules-left": [
+      "custom/window-name"
+    ],
+    "modules-center": [
+      "clock"],
+    "modules-right": [
+    ],
+
+    "custom/window-name": {
+      "format": "{}",
+      "interval": 1,
+      "max-length": 60,
+      "exec": "~/.config/waybar/scripts/window-name.sh"
+    },
+
+    "clock": {
+      "format": "<span color='#b69bf1'> </span>{:%I:%M %p}",
+      "format-alt": "<span foreground='#b69bf1'></span>{:%H:%M  %A %B %d}",
+      "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+      "on-click-right": "flipclock"
+    }
+  },
+
+
+
+
+
+
+
+
+
+  {
+    "name": "island",
+    "layer": "top",
+    "position": "right",
+    "exclusive": true,
+    "width": 52,
+
+    "modules-left": [],
+    "modules-center": [
+      "custom/power_mode",
+      "custom/island-sep1",
+      "hyprland/workspaces",
+      "custom/island-sep2",
+"custom/media-sep",
+"custom/media-prev",
+"custom/media-toggle",
+"custom/media-next",
+"custom/media-mute",
+      "custom/island-sep3",
+      "group/controls-drawer",
+      "custom/island-sep4",
+      "custom/tray-trigger",
+      "battery",
+      "tray",
+      "custom/island-sep5",
+      "custom/notifications"
+    ],
+    "modules-right": [],
+    
+
+
+
+"custom/media-sep": { "format": "", "tooltip": false },
+
+"custom/media-prev": {
+  "exec": "echo ''",
+  "exec-if": "playerctl -a status 2>/dev/null | grep -qE 'Playing|Paused'",
+  "interval": 2,
+  "format": "{}",
+  "on-click": "playerctl -a previous",
+  "tooltip": false
+},
+
+"custom/media-toggle": {
+  "exec": "playerctl -a status 2>/dev/null | grep -q 'Playing' && echo '' || echo ''",
+  "exec-if": "playerctl -a status 2>/dev/null | grep -qE 'Playing|Paused'",
+  "interval": 2,
+  "format": "{}",
+  "on-click": "playerctl -a play-pause",
+  "tooltip": false
+},
+
+"custom/media-next": {
+  "exec": "echo ''",
+  "exec-if": "playerctl -a status 2>/dev/null | grep -qE 'Playing|Paused'",
+  "interval": 2,
+  "format": "{}",
+  "on-click": "playerctl -a next",
+  "tooltip": false
+},
+
+"custom/media-mute": {
+  "exec": "pactl get-sink-mute @DEFAULT_SINK@ | grep -q yes && echo '󰝟' || echo '󰕾'",
+  "exec-if": "playerctl -a status 2>/dev/null | grep -qE 'Playing|Paused'",
+  "interval": 2,
+  "format": "{}",
+  "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+  "tooltip": false
+},
+
+
+
+
+
+
+
+    "custom/power_mode": {
+      "format": "<span>{}</span>",
+      "exec": "~/.config/waybar/scripts/power_mode_toggle.sh",
+      "on-click": "~/.config/waybar/scripts/power_mode_toggle.sh toggle",
+      "interval": 5,
+      "return-type": "json",
+      "tooltip-format": "Power mode: {}"
+    },
+
+    "custom/island-sep1": { "format": "", "tooltip": false },
+    "custom/island-sep2": { "format": "", "tooltip": false },
+    "custom/island-sep3": { "format": "", "tooltip": false },
+    "custom/island-sep4": { "format": "", "tooltip": false },
+    "custom/island-sep5": { "format": "", "tooltip": false },
+
+    "hyprland/workspaces": {
+      "format": "{icon}",
+      "on-click": "activate",
+      "all-outputs": true,
+      "persistent-workspaces": {
+        "1": [],
+        "2": [],
+        "3": []
+      },
+      "format-icons": {
+        "1": "1", "2": "2", "3": "3",
+        "4": "4", "5": "5", "6": "6",
+        "7": "7", "8": "8", "9": "9", "10": "10"
+      }
+    },
+
+   "network": {
+      "interface": "wlan0",
+      "interval": 2,
+      "format-wifi": "",
+      "format-disconnected": "󰤭",
+      "format-ethernet": "",
+      "tooltip-format-wifi": "{essid} {signalStrength}%\n↕ {bandwidthTotalBits}",
+      "tooltip-format-disconnected": "Disconnected",
+      "tooltip": true
+    },
+
+    "battery": {
+      "format": "{icon}",
+      "format-charging": "<span color='#a8cd76'></span>",
+      "format-icons": [
+        "<span color='#f70505'>󰂎</span>",
+        "<span color='#f70505'>󰁺</span>",
+        "<span color='#f27e35'>󰁻</span>",
+        "<span color='#f27e35'>󰁼</span>",
+        "󰁽", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"
+      ],
+      "format-charging": "<span color='#a8cd76'></span>",
+      "tooltip-format": "Battery {capacity}% · {time}",
+      "on-click-right": "alacritty -e htop"
+    },
+
+    "group/controls-drawer": {
+      "orientation": "vertical",
+      "drawer": {
+        "transition-duration": 400,
+        "transition-left-to-right": false,
+        "click-to-reveal": true
+      },
+      "modules": [
+        "custom/controls-trigger",
+        "custom/updates",
+        "pulseaudio",
+        "backlight",
+        "custom/nightlight"
+      ]
+    },
+
+    "custom/controls-trigger": {
+      "format": ":::",
+      "tooltip": false
+    },
+
+    "pulseaudio": {
+      "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+      "format": "<span color='#f7768e'></span>{icon}",
+      "format-muted": "<span color='#f7768e'>󰝟</span>",
+      "tooltip-format": "Volume {volume}%",
+      "format-icons": {
+        "headphone": "",
+        "headset": "",
+        "default": ["󰄰","󰪞","󰪟","󰪠","󰪡","󰪢","󰪣","󰪤","󰪥"]
+      },
+      "on-click-middle": "pypr toggle pavucontrol && hyprctl dispatch bringactiveontop"
+    },
+
+    "backlight": {
+      "device": "amdgpu_b10",
+      "format": "<span color='#d9b172'></span>{icon}",
+      "format-icons": ["", "", "", "", "", "", "", "", ""],
+      "tooltip-format": "Brightness {percent}%"
+    },
+
+    "custom/nightlight": {
+      "format": "<span color='#9D98F6'></span>󰯪",
+      "format-alt": "<span color='#F7768E'>󰞏</span>",
+      "on-click": "exec ~/.config/waybar/scripts/nightlight.sh",
+      "tooltip-format": "Night Light"
+    },
+
+    "custom/updates": {
+      "exec": "~/.config/waybar/scripts/arch-updates.sh",
+      "interval": 10,
+      "return-type": "json",
+      "on-click": "kitty -e "
+    },
+
+    "custom/tray-trigger": {
+      "format": "",
+      "tooltip": false
+    },
+
+    "tray": {
+      "icon-size": 14,
+      "reverse-direction": false,
+      "spacing": 8,
+      "show-disconnected": true
+    },
+
+    "custom/notifications": {
+      "exec": "swaync-client -swb",
+      "return-type": "json",
+      "format": "{icon}",
+      "format-icons": {
+        "notification": "󰂚",
+        "none": "",
+        "dnd-none": "󰂛",
+        "dnd-notification": "󰂛"
+      },
+      "on-click": "swaync-client -t"
+    }
+  }
+]

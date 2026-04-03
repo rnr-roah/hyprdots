@@ -1,0 +1,104 @@
+* {
+    font:               "JetBrainsMono Nerd Font 13";
+    border:             0;
+    margin:             0;
+    padding:            0;
+    spacing:            0;
+}
+
+window {
+    background-color:   transparent;
+    border:             0;
+    border-radius:      0;
+    padding:            0;
+    width:              560px;
+    location:           south;
+    anchor:             south;
+    fixed-height:       false;
+    y-offset:           -40px;
+}
+
+mainbox {
+    background-color:   transparent;
+    spacing:            8px;
+    padding:            0;
+    children:           [ listview, inputbar ];
+}
+
+inputbar {
+    background-color:   #1c202480;
+    border:             2px solid;
+    border-color:       #91cef4;
+    border-radius:      20px;
+    padding:            12px 16px;
+    spacing:            8px;
+    children:           [ prompt, entry ];
+}
+
+prompt {
+    background-color:   transparent;
+    text-color:         #91cef4ff;
+    font:               "JetBrainsMono Nerd Font Bold 13";
+    vertical-align:     0.5;
+}
+
+entry {
+    background-color:   transparent;
+    text-color:         #c1c7ce;
+    placeholder:        "Search";
+    placeholder-color:  #c1c7ce;
+    vertical-align:     0.5;
+    expand:             true;
+}
+
+listview {
+    background-color:   #1c202480;
+    border:             1px solid;
+    border-color:       #8b9297aa;
+    border-radius:      20px;
+    spacing:            2px;
+    padding:            6px;
+    lines:              6;
+    cycle:              false;
+    dynamic:            true;
+    scrollbar:          false;
+    fixed-height:       false;
+    reverse:            true;
+}
+
+element {
+    background-color:   transparent;
+    border-radius:      20px;
+    padding:            11px 16px;
+    spacing:            12px;
+    orientation:        horizontal;
+    children:           [ element-icon, element-text ];
+}
+
+element normal.normal {
+    background-color:   transparent;
+    text-color:         #dfe3e7;
+}
+
+element selected.normal {
+    background-color:   #91cef4;
+    text-color:         #00344b;
+}
+
+element alternate.normal {
+    background-color:   transparent;
+    text-color:         #dfe3e7;
+}
+
+element-icon {
+    background-color:   transparent;
+    size:               26px;
+    vertical-align:     0.5;
+}
+
+element-text {
+    background-color:   transparent;
+    text-color:         inherit;
+    vertical-align:     0.5;
+    expand:             true;
+}

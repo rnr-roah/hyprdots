@@ -1,0 +1,16 @@
+[templates.waybar]
+input_path  = '~/.config/matugen/templates/waybar.css'
+output_path = '~/.config/waybar/colors.css'
+post_hook   = 'pkill -SIGUSR2 waybar && hyprctl reload'
+
+[templates.hyprland]
+input_path  = '~/.config/matugen/templates/hyprland.conf'
+output_path = '~/.config/hypr/matugen-colors.conf'
+[templates.hyprlock]
+input_path  = '~/.config/matugen/templates/hyprlock-colors.sh'
+output_path = '~/.config/hypr/hyprlock-colors.sh'
+[templates.rofi]
+input_path  = "~/.config/matugen/templates/rofi.rasi"
+output_path = "~/.config/rofi/themes/matugen.rasi"
+[config]
+post_hook = 'pkill -SIGUSR2 waybar && hyprctl reload'

@@ -1,0 +1,203 @@
+{
+  "layer": "top",
+  "exclusive": false,
+    "height": 39,
+    "modules-center":["custom/tab","custom/left"],
+    "modules-right": ["cpu","custom/gpu","memory","temperature","custom/tab","custom/reboot","custom/shutdown", "custom/logout", "custom/lock"],
+      
+"custom/notifications": { 
+	"exec": "swaync-client -swb", 
+	"return-type": "json", 
+	"format": "{icon}",
+	"format-dnd":"dnd",
+	"format-icons": { 
+		"notification": "   󰂚", 
+		"none": "   ",
+		"dnd-none": "   󰂛",
+		"dnd-notification": "   󰂛" 
+	}, 
+	"on-click": "swaync-client -t" 
+},
+   
+
+
+
+"hyprland/workspaces": {
+      "format": "{icon}",
+      "on-click": "activate",
+      "all-outputs": true,
+      "persistent_workspaces" :{
+                            "1": [],
+	 		    "2": [],
+	 		    "3": [],
+	 		    "4": [],
+	 		    "5": [],
+	 		    "6": [],
+	 		    "7": [],
+	 		    "8": [],
+	 		    "9": [],
+	 		    "10": []
+        },
+        "format-icons": {
+                        "1": "󰲠",
+             		"2": "󰲢",
+             		"3": "󰲤" ,
+             		"4": "󰲦",
+             		"5": "󰲨",
+             		"6": "󰲪",
+             		"7": "󰲬",
+             		"8": "󰲮",
+             		"9": "󰲰",
+             		"10":""
+          }
+    },
+    "clock": {
+      "format": "<span color='#b69bf1'> </span>{:%I:%M %p}",
+  "format-alt": "<span foreground='#b69bf1'>{:%H:%M %p %a %d}</span>",
+      "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+      "on-click-right":"flipclock"
+    },
+    "custom/spacer1": {
+      "format": "|"
+    },
+    "custom/spacer2": {
+      "format": "|"
+    },
+    "dragshot": {
+      "format": "󱣴",
+      "on-click": "hyprshot -m region --clipboard-only"
+    },
+   
+    "backlight": {
+      "device": "amdgpu_b10",
+      "format": "<span color='#d9b172'>{icon}</span>",
+      "format-alt": "<span color='#d9b172'>󰃠</span> {percent}%",
+      "format-icons": ["", "", "", "", "", "", "", "", ""],
+      "tooltip-format":"Brightness {percent}%"
+    },
+  
+    "disk": {
+    "interval": 1,
+    "format": "<span color=\"#68b0d6\"> </span> {}%",
+    "on-click": "pypr toggle ranger && hyprctl dispatch bringactiveontop",
+    "on-click-right": "pcmanfm /home/"
+  },
+    "custom/window-name": {
+    "format": " <b>{}</b>",
+    "interval": 1,
+    "max-length": 20,
+    "exec": "hyprctl activewindow | grep class | awk '{print $2}'"
+  },
+   
+    "battery": {
+      "format": "<span color='#a8cd76'> {icon} </span>",
+      "format-alt": "<span color='#a8cd76'>{icon} {capacity}% : {time}</span>",
+      "on-click-right": "alacritty -e htop",
+      "format-icons": [
+	      "<span color='#f70505'>󰂎[critical]!!</span>", 
+	      "<span color='#f70505'>󰁺</span>", 
+	      "<span color='#f27e35'>󰁻</span>", 
+	      "<span color='#f27e35'>󰁼</span>", 
+	      "󰁽", 
+	      "󰁿", 
+	      "󰂀", "󰂁", "󰂂", "󰁹"],
+      "format-charging": "<span color='#a8cd76'></span>",
+      "format-charging-alt": "<span color='#a8cd76'></span> {capacity}%"
+    },
+    "network": {
+    "format-wifi": "<span color='#90cdfa'>  </span>",
+    "format-alt" : "<span foreground='#9ece6a'>󰒢</span> {essid}:{bandwidthTotalBits}",
+    "on-click-right": "kitty -e wifi",
+    "format-ethernet": " wired",
+    "tooltip-format": "{essid} {signalStrength}%",
+    "format-disconnected": "󰖪 "
+  },
+  "temperature": {
+    "thermal-zone": 0,
+    "critical-threshold": 80,
+    "format-critical": " {temperatureC}°C",
+    "format": " {temperatureC}°C"
+  },
+
+  
+  "custom/power_mode": {
+    "format": "<span>{}</span>",
+    "exec": "~/.config/waybar/scripts/power_mode_toggle.sh",
+    "on-click": "~/.config/waybar/scripts/power_mode_toggle.sh toggle",
+    "interval": 5,
+    "return-type": "json",
+      "tooltip-format": "Power mode: {}"
+  },
+ "custom/shot": {
+    "format": "󱣴",
+    "on-click": "hyprshot -m region --clipboard-only"
+  },
+ "custom/shutdown": {
+    "format": "󰐥",
+    "on-click": "kitty -e termdown 5s && hyprshot -m poweroff"
+  },
+ "custom/reboot": {
+    "format": "",
+    "on-click": "kitty -e termdown 5s && reboot"
+  },
+ "custom/logout": {
+    "format": "󰗽",
+    "on-click": "kitty -e termdown 5s && hyprctl dispatch exit"
+  },
+"custom/lock": {
+    "format": "",
+    "on-click": "hyprlock"
+  },
+
+
+
+
+
+
+    "memory": {
+    "format": "<span foreground='#9ece6a'></span> {}%",
+    "on-click": "pypr toggle htop && hyprctl dispatch bringactiveontop",
+      "format-icons": ["", "", "", "", "", "", "", "", ""]
+    },
+
+    "cpu": {
+    "format": "<span foreground='#ff005f'>{icon}</span>  {usage}%",
+     "format-icons": ["", "", "", "", "", "", "", "", ""]
+     },
+
+     "custom/gpu": {
+	"exec": "~/.config/waybar/scripts/gpu.sh",
+	"return-type": "json",
+	"interval": 3,
+	"format": "<span foreground='#a8c7fa'> </span>{}",
+        "tooltip": true
+	},
+
+     "temperature": {
+    "critical-threshold": 80,
+    "format": "<span foreground='#5d73ca'></span> {temperatureC}°C"
+     },
+
+
+
+
+
+
+    "custom/playerctl": {
+     "format": "{icon}  <span>{text}</span>",
+     "return-type": "json",
+     "max-length": 20,
+     "exec": "playerctl -a metadata --format '{\"text\": \"  {{markup_escape(title)}}\", \"tooltip\": \"{{playerName}} : {{markup_escape(title)}}\", \"alt\": \"{{status}}\", \"class\": \"{{status}}\"}' -F",
+     "on-click-middle": "playerctl previous",
+     "on-click": "playerctl play-pause",
+     "on-click-right": "playerctl next",
+     "format-icons": {
+       "Paused": "<span foreground='#bb9af7'></span>",
+       "Playing": "<span foreground='#bb9af7'></span>"
+     }
+     }
+
+}
+
+
+

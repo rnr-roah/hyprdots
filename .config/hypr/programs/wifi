@@ -1,0 +1,74 @@
+#!/bin/bash
+clear
+iwctl device wlan0 show
+echo "Wifi Manager"
+echo "------------"
+echo "1) Connect to a network"
+echo "2) Show connected/available network(s)"
+echo "3) Turn power on/off"
+echo "4) Disconnect from a network"
+echo 
+echo "Enter a number:"
+read ans
+echo
+if [[ $ans = 1 || $ans = $Return ]]
+then
+  iwctl station wlan0 get-networks
+  echo "Enter ssid:"
+  read ssid 
+  echo "Enter password:"
+  read passphrase
+  iwctl --passphrase $passphrase station wlan0 connect $ssid
+
+elif [[ $ans = 2 ]]
+then 
+  echo "'>' denotes the connected network"
+  echo "Press enter to exit"
+  iwctl station wlan0 scan
+  iwctl station wlan0 get-networks
+  read 
+
+elif [[ $ans = 3 ]]
+then
+  echo "Enter 'on' to start Wifi"
+  echo "or 'off' to stop wifi"
+  read reply
+  iwctl device wlan0 set-property Powered $reply
+  wifi 
+
+elif [[ $ans = 4 ]]
+then
+  echo "Enter ssid of the network"
+  read ssid
+  iwctl station wlan0 disconnect $ssid
+
+else 
+  figlet "wrong input aahoo!!" || lolcat
+  wifi
+  sleep 2
+fi
+
+echo "Want to continue? (Y/n)"
+read answer
+if [[ $answer = y || $answer = Y || $answer = $Return ]]
+then 
+	wifi
+
+elif [[ $answer = n || $asnwer = N ]]
+then
+	exit
+else 
+    figlet"Wrong input"
+    sleep 2
+    wifi
+fi
+exit
+
+
+
+
+
+
+
+
+

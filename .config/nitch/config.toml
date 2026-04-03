@@ -1,0 +1,8 @@
+[display]
+padding = 1
+logo = "none"  # or "none" to hide logo
+
+[modules]
+kernel = true
+uptime = true
+

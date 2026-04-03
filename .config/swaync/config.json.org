@@ -1,0 +1,77 @@
+{
+  "position": "top-right",
+  "output": "",
+  "layer": "overlay",
+  "control-center-layer": "overlay",
+  "css-application": "style.css",
+  "positionX": "right",
+  "positionY": "top",
+  "control-center-width": 380,
+  "control-center-height": 600,
+  "notifications": {
+    "max": 50,
+    "timeout": 5000
+  },
+
+  "notification-visibility": {
+    "default": "shown",
+    "when-history-visible": "hidden"
+  },
+
+  "notification-anim": {
+    "enabled": true,
+    "animate": "slide",
+    "duration-in": 150,
+    "duration-out": 150
+  },
+
+
+  "widget-config": {
+    "title": {
+      "label": "Notifications",
+      "max-lines":1
+    },
+    "dnd": {
+      "use-icon": true
+    },
+    "inhibitors": {
+      "show-when-empty": false
+    }
+  },
+
+  "control-center": {
+    "width": 420,
+    "height": 600,
+    "border-radius": 18,
+    "margin": 10,
+    "anchor": "top-right"
+  },
+
+  "notification-center": {
+    "border-radius": 14,
+    "max-notifications": 35
+  },
+
+  "notification": {
+    "border-radius": 14,
+    "body-markup": true,
+    "title-markup": true,
+    "app-icon-size": 40,
+    "image-size": 240
+  },
+
+  "actions": {
+    "left-click": "default",
+    "right-click": "dismiss",
+    "middle-click": "dismiss-all"
+  },
+
+  "history": {
+    "limit": 200
+  },
+
+  "dnd": {
+    "toggle-off-on-send": false
+  }
+}
+

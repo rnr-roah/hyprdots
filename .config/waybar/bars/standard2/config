@@ -1,0 +1,333 @@
+{
+  "layer": "top",
+  "position": "top",
+  "exclusive": true,
+    "height": 10,
+    "modules-left": ["custom/power_mode", "custom/minimal","group/expandable","group/expandable2", "hyprland/workspaces","custom/gpu"],
+    "modules-center": ["group/expandable3"],
+
+    "modules-right": ["network","custom/dropdown","custom/shot","custom/tab","custom/pomo","custom/playerctl","clock","custom/spacer2", "custom/notifications"],
+    "custom/arch": {
+      "format": "",
+      "on-click": "tofi-drun --drun-launch=true"
+    },
+ 
+//"custom/gpu": {
+//    "exec": "~/.config/waybar/scripts/gpu.sh",
+//    "return-type": "json",
+//    "interval": 3,
+//    "tooltip": true
+//},
+"group/expandable": {
+    "orientation": "horizontal",
+    "drawer": {
+        "transition-duration": 500,
+        "transition-left-to-right": false,
+	"click-to-reveal": false
+    },
+    "modules": [
+        "custom/arrow",
+        "custom/nightlight",
+        "battery",
+        "backlight",
+        "pulseaudio",
+        "custom/spacer1",
+        "custom/updates",
+	"tray"
+    ]
+},
+
+"custom/arrow": {
+    "format": "",
+    "tooltip": false
+},
+
+"group/expandable2": {
+    "orientation": "horizontal",
+    "drawer": {
+        "transition-duration": 500,
+        "transition-right-to-left": false,
+	"click-to-reveal": true
+    },
+    "modules": [
+        "custom/menu",
+        "custom/google",
+        "custom/whatsapp",
+	"custom/pavucontrol"
+    ]
+},
+
+"group/expandable3": {
+    "orientation": "horizontal",
+    "drawer": {
+        "transition-duration": 500,
+        "transition-right-to-left": false,
+	"click-to-reveal": true
+    },
+    "modules": [
+        "custom/window-name",
+        "custom/google",
+        "custom/whatsapp",
+	"custom/pavucontrol"
+    ]
+},
+
+"custom/menu": {
+    "format": "",
+    "tooltip": false
+},
+"custom/google":{
+        "format": "<span color='#b69bf1'></span>",
+	"tooltip": false,
+        "on-click": "pypr toggle google && hyprctl dispatch bringactiveontop"
+},
+"custom/whatsapp":{
+	"format":"<span color='light green'></span>",
+	"tooltip": false,
+        "on-click": "pypr toggle whatsapp && hyprctl dispatch bringactiveontop"
+},
+"custom/pavucontrol":{
+	"format":"<span color='pink'>󰲹</span>",
+	"tooltip": false,
+        "on-click": "pypr toggle pavucontrol && hyprctl dispatch bringactiveontop"
+},
+
+
+
+"custom/notifications": { 
+	"exec": "swaync-client -swb", 
+	"return-type": "json", 
+	"format": "{icon}",
+	"format-dnd":"dnd",
+	"format-icons": { 
+		"notification": "   󰂚", 
+		"none": "   ",
+		"dnd-none": "   󰂛",
+		"dnd-notification": "   󰂛" 
+	}, 
+	"on-click": "swaync-client -t" 
+},
+    
+"wlr/taskbar": {
+    "format": "{icon}",
+    "icon-size": 18,
+    "icon-theme": "Papirus-Dark",
+    "max-length": 30,
+    "on-click": "activate",
+    "on-click-middle": "close",
+    "ignore": [
+        "floating",
+        "popup"
+    ]
+},
+
+"hyprland/workspaces": {
+      "format": "{icon}",
+      "on-click": "activate",
+      "all-outputs": true,
+      "persistent-workspaces" :{
+                            "1": [],
+	 		    "2": [],
+	 		    "3": []
+	 		   // "4": [],
+	 		    //"5": [],
+	 		    //"6": [],
+	 		    //"7": [],
+	 		    //"8": [],
+	 		    //"9": []
+	 		    //"10": []
+        },
+        "format-icons": {
+                        "1": "󰲠",
+                        "2": "󰲢",
+                        "3": "󰲤" ,
+                        "4": "󰲦",
+                        "5": "󰲨",
+                        "6": "󰲪",
+                        "7": "󰲬",
+                        "8": "󰲮",
+                        "9": "󰲰",
+                        "10":"󰊗"
+              //"10": ""
+          }
+    },
+    "clock": {
+      "format": "<span color='#b69bf1'> </span>{:%I:%M %p}",
+  "format-alt": "<span foreground='#b69bf1'>{:%H:%M %p %a %d}</span>",
+      "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+      "on-click-right":"flipclock"
+    },
+    "custom/spacer1": {
+      "format": "|",
+      "tooltip": false
+    },
+    "custom/spacer2": {
+      "format": "|",
+      "tooltip": false
+    },
+  
+    "custom/shot": {
+    "format": "  󱣴",
+    "tooltip-format": "Screenshot",
+    "on-click": "hyprshot -m region --clipboard-only"
+  },
+ 
+  "custom/dropdown": {
+    "format": "",
+    "format-alt": "<span color='orange'></span>",
+    "on-click": "exec /home/roah/.config/waybar/bars/dropdown/waybar-drop.sh",
+    "tooltip": false
+  },
+    "custom/tab": {
+    "format": "",
+    //"format": "<span color='#9D98F6'>    </span>",
+    "format-alt": "<span color='#9D98F6'>  󰹫  </span>",
+    "on-click": "exec /home/roah/.config/waybar/bars/tab-bar/togglebar.sh"
+  },
+    "custom/pomo": {
+    "format": "󱎫  ",
+    //"format": "<span color='#9D98F6'> 󱎫 </span>",
+    "on-click": "pkill waybar ; kitty -e termdown 25m -s --no-figlet; waybar"
+  },
+  "custom/nightlight": {
+    "format": "<span color='#9D98F6'>󰯪</span>",
+    "format-alt": "<span color='#F7768E'>󰞏</span>",
+    "on-click": "exec ~/.config/waybar/scripts/nightlight.sh",
+    "tooltip-format": "Night Light"
+  },
+"custom/updates": {
+    "exec": "~/.config/waybar/scripts/arch-updates.sh",
+    "interval": 10,
+    "return-type": "json",
+    "on-click": "kitty -e "
+},
+"custom/minimal": {
+    "format": "<span color='#9D98F6'>󰨙</span>",
+    "on-click": "exec ~/.config/waybar/bars/minimal/start.sh",
+    "tooltip-format": "Switch to Minimal"
+  },
+
+
+
+    "backlight": {
+      "device": "amdgpu_b10",
+      "format": "<span color='#d9b172'>{icon}</span>",
+      "format-alt": "<span color='#d9b172'>󰃠</span> {percent}%",
+      "format-icons": ["", "", "", "", "", "", "", "", ""],
+      "tooltip-format":"Brightness {percent}%"
+    },
+  
+    "disk": {
+    "interval": 1,
+    "format": "<span color=\"#68b0d6\"> </span> {}%",
+    "on-click": "pypr toggle ranger && hyprctl dispatch bringactiveontop",
+    "on-click-right": "pcmanfm /home/"
+  },
+    "custom/window-name": {
+    "format": " <b>     {}     </b>",
+    "interval": 1,
+    "max-length": 20,
+    "exec": "~/.config/waybar/scripts/window-name.sh"
+    //"exec": "hyprctl activewindow | grep class | awk '{print $2}'"
+  },
+   
+    "battery": {
+      "format": "<span color='#a8cd76'> {icon} </span>",
+      "format-alt": "<span color='#a8cd76'>{icon} {capacity}% : {time}</span>",
+      "on-click-right": "alacritty -e htop",
+      "format-icons": [
+	      "<span color='#f70505'>󰂎[critical]!!</span>", 
+	      "<span color='#f70505'>󰁺</span>", 
+	      "<span color='#f27e35'>󰁻</span>", 
+	      "<span color='#f27e35'>󰁼</span>", 
+	      "󰁽", 
+	      "󰁿", 
+	      "󰂀", "󰂁", "󰂂", "󰁹"],
+      "format-charging": "<span color='#a8cd76'></span>",
+      "tooltip-format": "Battery {capacity}%"
+    },
+
+
+    "network": {
+    "interface": "wlan0",
+    "interval": 1,
+    "format-wifi": "{bandwidthTotalBits} ",
+    "format-alt": "{bandwidthDownBytes}{bandwidthUpBytes} ",
+    //"on-click-right": "kitty -e wifi",
+    "format-ethernet": " {bandwidthTotalBits}",
+    "tooltip": false
+  },
+  "temperature": {
+    "thermal-zone": 0,
+    "critical-threshold": 80,
+    "format-critical": " {temperatureC}°C",
+    "format": " {temperatureC}°C"
+  },
+
+  
+  "custom/power_mode": {
+    "format": "<span>{}</span>",
+    "exec": "~/.config/waybar/scripts/power_mode_toggle.sh",
+    "on-click": "~/.config/waybar/scripts/power_mode_toggle.sh toggle",
+    "interval": 5,
+    "return-type": "json",
+      "tooltip-format": "Power mode: {}"
+  },
+
+
+    "pulseaudio": {
+      "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+      "format": "<span color='#f7768e'>{icon}</span>",
+      "format-alt": "<span color='#f7768e'></span> {volume}%",
+      "format-muted": "<span color='#f7768e'>󰝟</span>",
+      "tooltip-format":"Volume {volume}%",
+      "format-icons": {
+       "headphone": "",
+       "hands-free": "",
+       "headset": "",
+       "phone": "",
+       "portable": "",
+       "car": "",
+      "default": ["󰄰","󰪞","󰪟","󰪠","󰪡","󰪢","󰪣","󰪤","󰪥"] 
+        },
+       "on-click-middle" : "pypr toggle pavucontrol && hyprctl dispatch bringactiveontop"
+    },
+    "memory": {
+    "format": "<span foreground='#9ece6a'></span> {}%",
+    "on-click": "pypr toggle htop && hyprctl dispatch bringactiveontop",
+      "format-icons": ["", "", "", "", "", "", "", "", ""]
+    },
+
+    "tray": {
+    "format": "",
+    "icon-size": 14,
+    "reverse-direction": false,
+    "spacing": 12,
+    "show-disconnected": true
+    },
+
+    "cpu": {
+    "format": "<span foreground='#ff005f'>{icon}</span>  {usage}%",
+     "format-icons": ["", "", "", "", "", "", "", "", ""]
+     },
+
+    // "temperature": {
+    // "critical-threshold": 80,
+    // "format": "<span foreground='#5d73ca'></span> {temperatureC}°C"
+    //  },
+
+    "custom/playerctl": {
+     "format": "{icon}<span>{text}</span>",
+     "return-type": "json",
+     "max-length": 20,
+     "exec": "playerctl -a metadata --format '{\"text\": \"  {{markup_escape(title)}}\", \"tooltip\": \"{{playerName}} : {{markup_escape(title)}}\", \"alt\": \"{{status}}\", \"class\": \"{{status}}\"}' -F",
+     "on-click-middle": "playerctl previous",
+     "on-click": "playerctl play-pause",
+     "on-click-right": "playerctl next",
+     "format-icons": {
+       "Paused": "<span foreground='#bb9af7'></span>",
+       "Playing": "<span foreground='#bb9af7'></span>"
+     }
+     }
+
+}

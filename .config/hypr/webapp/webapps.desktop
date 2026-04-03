@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Web Apps
+Exec=kitty -e /home/roah/.local/share/webapp/webapp-tool.sh
+Terminal=false
+Categories=Utility;
