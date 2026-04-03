@@ -1,0 +1,35 @@
+# ===== GENERAL =====
+font = "JetBrainsMono Nerd Font:size=14"
+font-size = 14
+lines = 12
+prompt-text = "Choose thy tapestry: "
+hint-font-size = 12
+
+# ===== IMAGE PREVIEW =====
+image-preview = true
+image-preview-padding = 12
+image-preview-background = "#00000088"
+image-preview-orientation = right
+image-preview-width = 40%
+image-preview-height = 100%
+
+# ===== COLORS =====
+text-color = "#eaeaea"
+prompt-color = "#aaaaaa"
+background-color = "#111111dd"
+selection-color = "#ffffff22"
+selection-text-color = "#ffffff"
+
+# ===== WINDOW =====
+width = 80%
+height = 70%
+border-width = 2
+border-color = "#44aaff"
+corner-radius = 12
+
+# ===== BEHAVIOR =====
+case-insensitive = true
+fuzzy-match = true
+no-overflow = true
+horizontal = false
+
