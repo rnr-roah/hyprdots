@@ -28,6 +28,6 @@ for config in "${configs[@]}"; do
 done
 
 ln -sf "$DOTS/wallpapers" "$HOME/Wallpapers"
-
+cp hyprdots.desktop ~/.local/share/applications/
 echo "Done! All symlinks created."
 echo "Old configs backed up to $BACKUP"

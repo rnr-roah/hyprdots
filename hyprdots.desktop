@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=hyprdots
+Comment=Manage and view hyprdots repo status
+Exec=kitty --title hyprdots --class hyprdots -e /home/roah/git-files/hyprdots/status.sh
+Icon=folder-git
+Terminal=false
+Type=Application
+Categories=Utility;
+Keywords=dots;dotfiles;git;hyprland;
