@@ -8,3 +8,5 @@ function fish_prompt
     set_color normal
     echo -n ' > '
 end
+
+fish_add_path /home/roah/.spicetify
