@@ -1,4 +1,0 @@
-export ML_PRIMARY="#acc7ff"
-export ML_ON_PRIMARY="#0f2f60"
-export ML_PRIMARY_CONTAINER="#2a4678"
-export ML_ON_PRIMARY_CONTAINER="#d7e2ff"
