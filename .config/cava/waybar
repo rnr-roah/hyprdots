@@ -1,0 +1,18 @@
+[general]
+bars = 8
+framerate = 60
+sensitivity = 200
+
+[smoothing]
+monstercat = 1
+waves = 1
+
+[output]
+method = raw
+raw_target = /dev/stdout
+data_format = ascii
+ascii_max_value = 1000
+
+[input]
+method = pulse
+source = alsa_output.usb-Synaptics_CX31993_MAX97220_HiFiAudio-00.analog-stereo.monitor

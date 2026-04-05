@@ -51,6 +51,7 @@
       "hyprland/workspaces",
       "custom/island-sep2",
 "custom/media-sep",
+"custom/playing",
 "custom/media-prev",
 "custom/media-toggle",
 "custom/media-next",
@@ -66,15 +67,18 @@
     ],
     "modules-right": [],
     
-
-
-
+"custom/playing": {
+  "exec": "~/.config/waybar/scripts/playing.sh",
+  "format": "{}",
+  "tail": true,
+  "tooltip": false
+},
 "custom/media-sep": { "format": "", "tooltip": false },
 
 "custom/media-prev": {
   "exec": "echo ''",
   "exec-if": "playerctl -a status 2>/dev/null | grep -qE 'Playing|Paused'",
-  "interval": 2,
+  "interval": 1,
   "format": "{}",
   "on-click": "playerctl -a previous",
   "tooltip": false
@@ -83,7 +87,7 @@
 "custom/media-toggle": {
   "exec": "playerctl -a status 2>/dev/null | grep -q 'Playing' && echo '' || echo ''",
   "exec-if": "playerctl -a status 2>/dev/null | grep -qE 'Playing|Paused'",
-  "interval": 2,
+  "interval": 1,
   "format": "{}",
   "on-click": "playerctl -a play-pause",
   "tooltip": false
@@ -92,7 +96,7 @@
 "custom/media-next": {
   "exec": "echo ''",
   "exec-if": "playerctl -a status 2>/dev/null | grep -qE 'Playing|Paused'",
-  "interval": 2,
+  "interval": 1,
   "format": "{}",
   "on-click": "playerctl -a next",
   "tooltip": false
@@ -101,7 +105,7 @@
 "custom/media-mute": {
   "exec": "pactl get-sink-mute @DEFAULT_SINK@ | grep -q yes && echo '󰝟' || echo '󰕾'",
   "exec-if": "playerctl -a status 2>/dev/null | grep -qE 'Playing|Paused'",
-  "interval": 2,
+  "interval": 1,
   "format": "{}",
   "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
   "tooltip": false

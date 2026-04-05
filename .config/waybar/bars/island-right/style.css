@@ -255,7 +255,8 @@ window#waybar.island .modules-center {
 #custom-media-prev,
 #custom-media-toggle,
 #custom-media-next,
-#custom-media-mute {
+#custom-media-mute,
+#custom-playing {
   /*background: alpha(@on_primary, 0.6);*/
   background: alpha(@primary_container, 0.3);
   color: alpha(@on_surface, 0.65);
@@ -268,7 +269,7 @@ window#waybar.island .modules-center {
   border-right: 1px solid alpha(@primary_container, 0.5);
 }
 
-#custom-media-prev {
+#custom-playing{
   padding-top: 12px;
   border-top: 1px solid alpha(@primary_container, 0.5);
   border-top-left-radius: 999px;
@@ -292,3 +293,9 @@ window#waybar.island .modules-center {
 #custom-media-next:hover { color: @on_surface; }
 #custom-media-toggle:hover { color: @primary; }
 #custom-media-mute:hover { color: #f7768e; }
+
+#custom-playing {
+  color: @primary;
+  font-size: 16px;
+  transition: 60ms;
+}
