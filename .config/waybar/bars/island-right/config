@@ -197,22 +197,28 @@
 
     "pulseaudio": {
       "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
-      "format": "<span color='#f7768e'></span>{icon}",
+      "format": "<span color='#f7768e'>{icon}</span>",
+      "format-alt": "<span color='#f7768e'></span> {volume}%",
       "format-muted": "<span color='#f7768e'>󰝟</span>",
-      "tooltip-format": "Volume {volume}%",
+      "tooltip-format":"Volume {volume}%",
       "format-icons": {
-        "headphone": "",
-        "headset": "",
-        "default": ["󰄰","󰪞","󰪟","󰪠","󰪡","󰪢","󰪣","󰪤","󰪥"]
-      },
-      "on-click-middle": "pypr toggle pavucontrol && hyprctl dispatch bringactiveontop"
+       "headphone": "",
+       "hands-free": "",
+       "headset": "",
+       "phone": "",
+       "portable": "",
+       "car": "",
+      "default": ["󰄰","󰪞","󰪟","󰪠","󰪡","󰪢","󰪣","󰪤","󰪥"] 
+        },
+       "on-click-middle" : "pypr toggle pavucontrol && hyprctl dispatch bringactiveontop"
     },
 
     "backlight": {
       "device": "amdgpu_b10",
-      "format": "<span color='#d9b172'></span>{icon}",
+      "format": "<span color='#d9b172'>{icon}</span>",
+      "format-alt": "<span color='#d9b172'>󰃠</span> {percent}%",
       "format-icons": ["", "", "", "", "", "", "", "", ""],
-      "tooltip-format": "Brightness {percent}%"
+      "tooltip-format":"Brightness {percent}%"
     },
 
     "custom/nightlight": {
@@ -226,7 +232,7 @@
       "exec": "~/.config/waybar/scripts/arch-updates.sh",
       "interval": 10,
       "return-type": "json",
-      "on-click": "kitty -e "
+      "on-click": "kitty -e bash -c 'sudo pacman -Syu; yay -Syu; exec fish'"
     },
 
     "custom/tray-trigger": {

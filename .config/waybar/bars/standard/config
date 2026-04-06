@@ -194,7 +194,7 @@
     "exec": "~/.config/waybar/scripts/arch-updates.sh",
     "interval": 10,
     "return-type": "json",
-    "on-click": "kitty -e "
+    "on-click": "kitty -e yay -Syu"
 },
 "custom/minimal": {
     "format": "<span color='#9D98F6'>󰨙</span>",

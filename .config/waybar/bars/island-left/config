@@ -51,6 +51,7 @@
       "hyprland/workspaces",
       "custom/island-sep2",
 "custom/media-sep",
+"custom/playing",
 "custom/media-prev",
 "custom/media-toggle",
 "custom/media-next",
@@ -66,15 +67,18 @@
     ],
     "modules-right": [],
     
-
-
-
+"custom/playing": {
+  "exec": "~/.config/waybar/scripts/playing.sh",
+  "format": "{}",
+  "tail": true,
+  "tooltip": false
+},
 "custom/media-sep": { "format": "", "tooltip": false },
 
 "custom/media-prev": {
   "exec": "echo ''",
   "exec-if": "playerctl -a status 2>/dev/null | grep -qE 'Playing|Paused'",
-  "interval": 2,
+  "interval": 1,
   "format": "{}",
   "on-click": "playerctl -a previous",
   "tooltip": false
@@ -83,7 +87,7 @@
 "custom/media-toggle": {
   "exec": "playerctl -a status 2>/dev/null | grep -q 'Playing' && echo '' || echo ''",
   "exec-if": "playerctl -a status 2>/dev/null | grep -qE 'Playing|Paused'",
-  "interval": 2,
+  "interval": 1,
   "format": "{}",
   "on-click": "playerctl -a play-pause",
   "tooltip": false
@@ -92,7 +96,7 @@
 "custom/media-next": {
   "exec": "echo ''",
   "exec-if": "playerctl -a status 2>/dev/null | grep -qE 'Playing|Paused'",
-  "interval": 2,
+  "interval": 1,
   "format": "{}",
   "on-click": "playerctl -a next",
   "tooltip": false
@@ -101,7 +105,7 @@
 "custom/media-mute": {
   "exec": "pactl get-sink-mute @DEFAULT_SINK@ | grep -q yes && echo '󰝟' || echo '󰕾'",
   "exec-if": "playerctl -a status 2>/dev/null | grep -qE 'Playing|Paused'",
-  "interval": 2,
+  "interval": 1,
   "format": "{}",
   "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
   "tooltip": false
@@ -179,9 +183,9 @@
       },
       "modules": [
         "custom/controls-trigger",
-        "custom/updates",
         "pulseaudio",
         "backlight",
+        "custom/updates",
         "custom/nightlight"
       ]
     },
@@ -193,22 +197,28 @@
 
     "pulseaudio": {
       "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
-      "format": "<span color='#f7768e'></span>{icon}",
+      "format": "<span color='#f7768e'>{icon}</span>",
+      "format-alt": "<span color='#f7768e'></span> {volume}%",
       "format-muted": "<span color='#f7768e'>󰝟</span>",
-      "tooltip-format": "Volume {volume}%",
+      "tooltip-format":"Volume {volume}%",
       "format-icons": {
-        "headphone": "",
-        "headset": "",
-        "default": ["󰄰","󰪞","󰪟","󰪠","󰪡","󰪢","󰪣","󰪤","󰪥"]
-      },
-      "on-click-middle": "pypr toggle pavucontrol && hyprctl dispatch bringactiveontop"
+       "headphone": "",
+       "hands-free": "",
+       "headset": "",
+       "phone": "",
+       "portable": "",
+       "car": "",
+      "default": ["󰄰","󰪞","󰪟","󰪠","󰪡","󰪢","󰪣","󰪤","󰪥"] 
+        },
+       "on-click-middle" : "pypr toggle pavucontrol && hyprctl dispatch bringactiveontop"
     },
 
     "backlight": {
       "device": "amdgpu_b10",
-      "format": "<span color='#d9b172'></span>{icon}",
+      "format": "<span color='#d9b172'>{icon}</span>",
+      "format-alt": "<span color='#d9b172'>󰃠</span> {percent}%",
       "format-icons": ["", "", "", "", "", "", "", "", ""],
-      "tooltip-format": "Brightness {percent}%"
+      "tooltip-format":"Brightness {percent}%"
     },
 
     "custom/nightlight": {
@@ -222,7 +232,7 @@
       "exec": "~/.config/waybar/scripts/arch-updates.sh",
       "interval": 10,
       "return-type": "json",
-      "on-click": "kitty -e "
+      "on-click": "kitty -e bash -c 'sudo pacman -Syu; yay -Syu; exec fish'"
     },
 
     "custom/tray-trigger": {

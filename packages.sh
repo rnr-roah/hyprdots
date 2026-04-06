@@ -149,6 +149,7 @@ yay -S --noconfirm --needed \
     rofi-calc \
     localsend-bin \
     sunsetr \
+    howdy \
     awww
 
 echo ""
