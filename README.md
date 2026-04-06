@@ -2,6 +2,10 @@
 
 My personal Hyprland dotfiles for Arch Linux.
 
+
+
+https://github.com/user-attachments/assets/8e652b2e-67cd-4fef-adc7-f981895d35a0
+
 > Screenshots coming soon
 
 ---
