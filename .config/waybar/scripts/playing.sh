@@ -15,7 +15,7 @@ while true; do
   fi
 
   if [ "$STATUS" = "Paused" ]; then
-    echo "·"
+    echo ""
     sleep 0.5
     continue
   fi

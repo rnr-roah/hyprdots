@@ -183,9 +183,9 @@
       },
       "modules": [
         "custom/controls-trigger",
-        "custom/updates",
         "pulseaudio",
         "backlight",
+        "custom/updates",
         "custom/nightlight"
       ]
     },
