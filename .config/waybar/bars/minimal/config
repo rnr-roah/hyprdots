@@ -7,7 +7,7 @@
 
     "modules-center": ["clock"],
 
-    "modules-right": ["memory","cpu","battery","tray","custom/spacer2", "custom/notifications"],
+    "modules-right": ["custom/gpu", "memory","cpu","battery","tray","custom/spacer2", "custom/notifications"],
   
   
 "custom/notifications": { 
@@ -78,7 +78,13 @@
     "on-click": "exec ~/.config/waybar/scripts/nightlight.sh"
   },
   
-
+"custom/gpu": {
+	"exec": "~/.config/waybar/scripts/gpu.sh",
+	"return-type": "json",
+	"interval":1,
+	"format": "<span foreground='#a8c7fa> gpu </span>",
+	"tooltip": true
+},
 
 
 

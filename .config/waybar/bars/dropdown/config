@@ -168,7 +168,7 @@
      "custom/gpu": {
 	"exec": "~/.config/waybar/scripts/gpu.sh",
 	"return-type": "json",
-	"interval": 3,
+	"interval": 1,
 	"format": "<span foreground='#a8c7fa'> </span>{}",
         "tooltip": true
 	},
