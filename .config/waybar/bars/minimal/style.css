@@ -39,7 +39,10 @@ window#waybar {
   font-size: 15px;
 }
 
-
+#custom-gpu{
+	padding: 0 5px;
+	background-color: black;
+}
 /*Joining the brightness and sound module together with css*/
 #backlight, #pulseaudio, #battery,#network, #tray, #custom-spacer1, #custom-nightlight{
   /*background-color: @background-alt;*/

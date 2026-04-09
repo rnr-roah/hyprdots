@@ -82,7 +82,7 @@
 	"exec": "~/.config/waybar/scripts/gpu-minimal.sh",
 	"return-type": "json",
 	"interval":1,
-	"format": "<span foreground='#a8c7fa'> gpu </span>{}",
+	"format": "<span foreground='#a8c7fa'>G</span>{}",
 	"tooltip": true
 },
 
