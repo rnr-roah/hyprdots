@@ -3,9 +3,10 @@
 IDLE_PATH="/sys/class/drm/card0/device/tile0/gt0/gtidle/idle_residency_ms"
 FREQ_PATH="/sys/class/drm/card0/device/tile0/gt0/freq0/cur_freq"
 INTERVAL=1
+
 source ~/.config/hypr/hyprlock-colors.sh
 primary="${ML_PRIMARY}"
-faded="${ML_PRIMARY}90"
+faded="${ML_PRIMARY}"
 TOTAL=10
 
 IDLE1=$(cat "$IDLE_PATH")
@@ -24,12 +25,12 @@ BUSY=$(awk -v i1="$IDLE1" -v i2="$IDLE2" -v iv="$INTERVAL" 'BEGIN {
 
 FILLED=$(( BUSY * TOTAL / 100 ))
 
-BAR="<span foreground='${primary}'>G </span>"
-for ((i=0; i<TOTAL; i++)); do
+BAR=""
+for ((i=TOTAL-1; i>=0; i--)); do
     if (( i < FILLED )); then
-        BAR+="<span foreground='${primary}'>█ </span>"
+        BAR+="<span foreground='${primary}'>█</span>\n"
     else
-        BAR+="<span foreground='${faded}'>░ </span>"
+        BAR+="<span foreground='${faded}'>░</span>\n"
     fi
 done
 

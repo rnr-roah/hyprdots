@@ -6,6 +6,7 @@
 @define-color text-alt #ffffff;
 @define-color selected alpha(@text-alt, .4);
 @define-color hover alpha(@selected, .4);
+@import "colors.css";
 
 * {
   border: none;
@@ -40,8 +41,10 @@ window#waybar {
 }
 
 #custom-gpu{
-	padding: 0 5px;
-	background-color: black;
+	padding: 0 10px;
+	background-color: @surface;
+	border-radius: 5px;
+	margin: 2px;
 }
 /*Joining the brightness and sound module together with css*/
 #backlight, #pulseaudio, #battery,#network, #tray, #custom-spacer1, #custom-nightlight{
@@ -120,6 +123,7 @@ window#waybar {
   margin-left: 10px;
   margin-right: 0px;
   opacity: 0.75;
+	background-color: black;
   padding-left: 10px;
   padding-right: 10px;
   font-size: 14px;
