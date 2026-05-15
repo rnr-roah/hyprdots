@@ -7,7 +7,7 @@
     "height": 20,
 
     "modules-left": [
-      "custom/window-name"
+      "custom/tab","custom/window-name"
     ],
     "modules-center": [
       "clock"],
@@ -21,6 +21,11 @@
       "max-length": 60,
       "exec": "~/.config/waybar/scripts/window-name.sh"
     },
+   "custom/tab": {
+    "format": "<span color='#9D98F6'>       󰨙  </span>",
+    "on-click": "exec ~/.config/waybar/bars/minimal/start.sh",
+    "tooltip-format": "Switch to Standard Mode"
+  },
     "custom/gpu":{
 	    "exec": "~/.config/waybar/scripts/gpu-minimal.sh",
 	    "return-type": "json",

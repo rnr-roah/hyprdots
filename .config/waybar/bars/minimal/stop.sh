@@ -4,5 +4,5 @@
 pkill -x waybar
 waybar & disown
 hyprctl reload
-swaybg -i /home/roah/Wallpapers/default/background.png -m fill
+~/.config/hypr/scripts/wallpaper-restore.sh
 exit
