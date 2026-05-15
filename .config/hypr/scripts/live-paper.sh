@@ -5,6 +5,8 @@ DEFAULT_DIR="$HOME/Wallpapers/default"
 DEFAULT_WALL="$DEFAULT_DIR/background.png"
 
 THUMB_CACHE_DIR="$HOME/.cache/wallpaper-thumbs"
+PINGPONG_CACHE_DIR="$HOME/.cache/wallpaper-pingpong"
+
 STATE_DIR="$HOME/.local/state/wallpapers"
 CACHE_FILE="$STATE_DIR/current_live_wallpaper"
 
@@ -13,7 +15,7 @@ THUMB_SIZE="240x135"
 MONITOR="${MONITOR:-eDP-1}"
 MPV_OPTS="no-audio loop --hwdec=auto --panscan=1.0 --vf-add=fps=30"
 
-mkdir -p "$THUMB_CACHE_DIR" "$STATE_DIR" "$DEFAULT_DIR"
+mkdir -p "$THUMB_CACHE_DIR" "$PINGPONG_CACHE_DIR" "$STATE_DIR" "$DEFAULT_DIR"
 
 mapfile -t WALLS < <(
   find -L "$LIVE_DIR" -maxdepth 1 -type f \
@@ -64,26 +66,39 @@ CHOICE=$(printf "%b" "$ROFI_INPUT" | rofi \
 [[ -z "$CHOICE" ]] && exit 0
 
 SELECTED="${WALLS[$CHOICE]}"
+HASH="$(md5sum <<< "$SELECTED" | cut -d' ' -f1)"
+PINGPONG_VIDEO="$PINGPONG_CACHE_DIR/$HASH.mp4"
 
-# Extract frame from selected live wallpaper into default background
+# Extract frame into default wallpaper path
 ffmpeg -y -ss 00:00:03 -i "$SELECTED" -vframes 1 "$DEFAULT_WALL" >/dev/null 2>&1
 
-# Set extracted frame with swaybg first
+# Set extracted frame with swaybg first, so no ugly gap
 pkill -x swaybg 2>/dev/null
 swaybg -i "$DEFAULT_WALL" -m fill &
 disown
 
-# Generate colors from extracted frame
+# Generate Matugen colors
 matugen image "$DEFAULT_WALL" --source-color-index 0
 
-# Kill old live wallpaper after fallback is already updated
+# Create ping-pong version only if it does not already exist
+if [[ ! -f "$PINGPONG_VIDEO" ]]; then
+  notify-send "Live Wallpaper" "Creating ping-pong version..." 2>/dev/null
+
+  ffmpeg -y -i "$SELECTED" \
+    -filter_complex "[0:v]reverse[r];[0:v][r]concat=n=2:v=1:a=0" \
+    -an \
+    -movflags +faststart \
+    "$PINGPONG_VIDEO" >/dev/null 2>&1
+fi
+
+# Kill old live wallpaper
 pkill -x mpvpaper 2>/dev/null
 
-# Start new live wallpaper
-mpvpaper -o "$MPV_OPTS" "$MONITOR" "$SELECTED" &
+# Start ping-pong live wallpaper
+mpvpaper -o "$MPV_OPTS" "$MONITOR" "$PINGPONG_VIDEO" &
 disown
 
-# Save persistent state
+# Save original selected wallpaper persistently
 echo "$SELECTED" > "$CACHE_FILE"
 
 notify-send "Live wallpaper set" "$(basename "$SELECTED")" 2>/dev/null
