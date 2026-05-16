@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-LIVE_DIR="${1:-$HOME/Wallpapers/live}"
+LIVE_DIR="${1:-$HOME/Wallpapers/live/pingpong}"
 DEFAULT_DIR="$HOME/Wallpapers/default"
 DEFAULT_WALL="$DEFAULT_DIR/background.png"
 

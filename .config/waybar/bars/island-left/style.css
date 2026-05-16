@@ -18,10 +18,20 @@
    TOP BAR
    ═══════════════════════════════════════════════════════════ */
 
+
 window#waybar.topbar {
-  background: alpha(@surface, 0.45);
-  border-bottom: 1px solid alpha(@on_surface_variant, 0.06);
+  background: linear-gradient(
+    180deg,
+    alpha(@surface, 0.7) 0%,
+    alpha(@surface, 0.30) 50%,
+    alpha(@surface, 0.0) 100%
+  );
+
 }
+
+
+
+
 #custom-gpu, #custom-ram, #custom-cpu{
   padding:0 0px;
   background: alpha(@surface, 0.4);

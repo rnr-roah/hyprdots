@@ -7,11 +7,12 @@
     "height": 20,
 
     "modules-left": [
-      "custom/window-name"
+      "custom/tab","custom/window-name"
     ],
     "modules-center": [
       "clock"],
     "modules-right": [
+	    "custom/gpu.bak", "custom/rami.bak", "custom/cpu.bak"
     ],
 
     "custom/window-name": {
@@ -19,6 +20,32 @@
       "interval": 1,
       "max-length": 60,
       "exec": "~/.config/waybar/scripts/window-name.sh"
+    },
+   "custom/tab": {
+    "format": "<span color='#9D98F6'>       󰨙  </span>",
+    "on-click": "exec ~/.config/waybar/bars/minimal/start.sh",
+    "tooltip-format": "Switch to Standard Mode"
+  },
+    "custom/gpu":{
+	    "exec": "~/.config/waybar/scripts/gpu-minimal.sh",
+	    "return-type": "json",
+	    "interval": 1,
+	    "format": "<span color='#a8c7fa'></span>{}",
+	    "tooltip": true
+    },
+    "custom/ram":{
+	    "exec": "~/.config/waybar/scripts/ram-minimal.sh",
+	    "return-type": "json",
+	    "interval": 1,
+	    "format": "<span color='#a8c7fa'></span>{}",
+	    "tooltip": true
+    },
+    "custom/cpu":{
+	    "exec": "~/.config/waybar/scripts/cpu-minimal.sh",
+	    "return-type": "json",
+	    "interval": 1,
+	    "format": "<span color='#a8c7fa'></span>{}",
+	    "tooltip": true
     },
 
     "clock": {
@@ -44,7 +71,7 @@
     "exclusive": true,
     "width": 52,
 
-    "modules-left": [],
+    "modules-left": ["custom/cpuvertical"],
     "modules-center": [
       "custom/power_mode",
       "custom/island-sep1",
@@ -65,7 +92,8 @@
       "custom/island-sep5",
       "custom/notifications"
     ],
-    "modules-right": [],
+    "modules-right": [
+      "custom/gpuvertical"],
     
 "custom/playing": {
   "exec": "~/.config/waybar/scripts/playing.sh",
@@ -110,6 +138,24 @@
   "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
   "tooltip": false
 },
+
+ "custom/gpuvertical":{
+	    "exec": "~/.config/waybar/scripts/gpu-vertical.sh",
+	    "return-type": "json",
+	    "interval": 1,
+	    "format": "{}",
+	    "tooltip": true
+    },
+ 
+ "custom/cpuvertical":{
+	    "exec": "~/.config/waybar/scripts/cpu-vertical.sh",
+	    "return-type": "json",
+	    "interval": 1,
+	    "format": "{}",
+	    "tooltip": true
+    },
+
+
 
 
 
