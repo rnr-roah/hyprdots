@@ -1,5 +1,4 @@
 #!/bin/env bash
-#!/bin/bash
 pkill -x waybar
 waybar -c ~/.config/waybar/bars/minimal/config -s ~/.config/waybar/bars/minimal/style.css & disown
 hyprctl keyword monitor "eDP-1,1920x1200@120,0x0,1"

@@ -1,17 +1,20 @@
 {
     "$schema": "/etc/xdg/swaync/configschema.json",
-    "positionX": "right",
-    "positionY": "top",
+    "positionX": "left",
+    "positionY": "bottom",
+    "control-center-margin-bottom": 175,
     "cssPriority": "user",
-    "control-center-width": 450,
-    "fit-to-screen": true,
+    "fit-to-screen": false,
+    "control-center-height":800,
+    "control-center-width": 700,
+
 
     "notification-window-width": 400,
     "notification-icon-size": 40,
-    "notification-body-image-height": 500,
+    "notification-body-image-height": 600,
     "notification-body-image-width": 500,
     "notification-inline-replies": true,
-    "notification-2fa-action": false,
+    "notification-2fa-action": true,
   
     "timeout": 8,
     "timeout-low": 5,
@@ -27,8 +30,11 @@
 "notifications": {
     "enable-sound": true,
     "sound-player": "canberra-gtk-play -i message",
-    "sound-file": ""
-},
+    "sound-file": "",
+    "positionX": "top",
+    "positionY": "center"
+
+  },
 
     "widgets": [
       "buttons-grid",
@@ -55,9 +61,9 @@
         },
 
         "mpris": {
-            "image-size": 110,
+            "image-size": 80,
             "image-radius": 12,
-            "autohide": false,
+            "autohide": true,
             "blacklist": [ "org.mpris.MediaPlayer2.playerctld"]
         },
 
@@ -66,7 +72,7 @@
                 {
                     "label": "󰌪",
                     "type": "toggle",
-                    "command": "bash -c $HOME/.config/swaync/scripts/quiet.sh",
+                    "command": "bash -c $HOME/.config/waybar/bars/minimal/start.sh; powerprofilesctl set power-saver",
                     "update-command": "bash -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && $HOME/.config/swaync/scripts/update_quiet.sh'"
                 },
                 {

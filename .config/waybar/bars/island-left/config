@@ -12,7 +12,7 @@
     "modules-center": [
       "clock"],
     "modules-right": [
-	    "custom/gpu.bak", "custom/rami.bak", "custom/cpu.bak"
+	    "custom/kiro", "custom/rami.bak", "custom/cpu.bak"
     ],
 
     "custom/window-name": {
@@ -25,6 +25,12 @@
     "format": "<span color='#9D98F6'>       󰨙  </span>",
     "on-click": "exec ~/.config/waybar/bars/minimal/start.sh",
     "tooltip-format": "Switch to Standard Mode"
+  },
+  "custom/kiro": {
+    "format": "<span color='#9D98F6'>  󰚩       </span>",
+    "format-alt": "<span color='#9D98F6'>  󱚟       </span>",
+    "on-click": "pkill -f ~/.config/roah-voice/kiro.sh; exec ~/.config/roah-voice/kiro.sh",
+    "tooltip-format": "Kiro | Assistant"
   },
     "custom/gpu":{
 	    "exec": "~/.config/waybar/scripts/gpu-minimal.sh",
@@ -298,9 +304,9 @@
       "return-type": "json",
       "format": "{icon}",
       "format-icons": {
-        "notification": "󰂚",
-        "none": "",
-        "dnd-none": "󰂛",
+        "notification": "",
+        "none": "",
+        "dnd-none": "",
         "dnd-notification": "󰂛"
       },
       "on-click": "swaync-client -t"
