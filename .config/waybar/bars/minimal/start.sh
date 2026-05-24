@@ -3,6 +3,7 @@ pkill -x waybar
 waybar -c ~/.config/waybar/bars/minimal/config -s ~/.config/waybar/bars/minimal/style.css & disown
 hyprctl keyword monitor "eDP-1,1920x1200@120,0x0,1"
 pkill mpvpaper
+pkill hypridle
 hyprctl keyword decoration:rounding 0
 hyprctl keyword animations:enabled false
 hyprctl keyword decoration:blur:enabled false
