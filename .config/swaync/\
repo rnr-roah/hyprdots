@@ -284,37 +284,24 @@
 }
 
 .notification {
-  padding: 5px;
-  border-radius: 20px;
+  padding: 0 5px;
+  border-radius: 30px;
   border: 1px solid @border;
   background: @card;
   color: @text;
   opacity: 1;
 }
 
-/* Control center notifications: readable, themed */
-.control-center .notification-background {
-    background: alpha(@surface, 0.45);
-    border: 0px solid alpha(@primary, 0.12);
-    border-radius: 24px;
-    margin: 0px 0;
-    padding: 0px;
-    opacity: 1;
-}
-.control-center-list-placeholder {
-    opacity: 0;
-    font-size: 0;
-}
+
 .control-center .notification {
   background: linear-gradient(
     135deg,
     @solid-card,
     @solid-card-2
   );
-  border: 1px solid alpha(@primary, 1);
+  border: 2px solid alpha(@primary, 1);
   opacity: 1;
-  border-radius: 20px;
-  margin: 2px;
+  border-radius: 16px;
 }
 
 .control-center .notification .summary,
@@ -384,7 +371,7 @@
 
 .notification-background .close-button {
   margin: 6px;
-  padding: 0px;
+  padding: 2px;
   border-radius: 8px;
   background: transparent;
 }
@@ -399,12 +386,8 @@
 }
 
 .notification-group {
-  margin: 0px 0px;
-  padding: 2px;
+  margin: 0px 8px;
   opacity: 1;
-  border-radius: 24px;
-  background: alpha(@surface, 0.7);
-  border: 1px solid alpha(@primary, 0.1);
 }
 
 .notification-group-headers {

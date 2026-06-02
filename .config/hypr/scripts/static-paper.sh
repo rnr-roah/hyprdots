@@ -79,7 +79,8 @@ disown
 
 # Generate colors
 matugen image "$DEFAULT_WALL" --source-color-index 0
-
+# pkill swaync && swaync disown
+swaync-client -rs
 # Save state
 echo "$SELECTED" > "$CACHE_FILE"
 

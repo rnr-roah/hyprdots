@@ -52,8 +52,8 @@ window#waybar.topbar {
 #clock {
   color: alpha(@on_surface, 0.8);
   font-size: 12px;
-  padding-left: 10px;
-  padding-right: 16px;
+  padding-left: 0px;
+  padding-right: 0px;
 }
 /* GPU — right */
 #custom-gpu {

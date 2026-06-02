@@ -77,7 +77,8 @@ matugen image "$DEFAULT_WALL" --source-color-index 0
 # Start live wallpaper
 mpvpaper -o "$MPV_OPTS" "$MONITOR" "$SELECTED" &
 disown
-
+# pkill swaync && swaync disown
+swaync-client -rs
 # Save persistent state
 echo "$SELECTED" > "$CACHE_FILE"
 
