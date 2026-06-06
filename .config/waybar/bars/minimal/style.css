@@ -6,7 +6,7 @@
 @define-color text-alt #ffffff;
 @define-color selected alpha(@text-alt, .4);
 @define-color hover alpha(@selected, .4);
-@import "../../colors.css";
+@import "~/.config/waybar/colors.css";
 
 * {
   border: none;

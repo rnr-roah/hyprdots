@@ -85,7 +85,7 @@ done
 echo "Linking Wallpapers..."
 
 link_item \
-  "$DOTS/Wallpapers" \
+  "$DOTS/wallpapers" \
   "$HOME/Wallpapers" \
   "Wallpapers"
 
