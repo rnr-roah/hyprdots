@@ -55,7 +55,7 @@
 //@theme "/home/roah/.config/rofi/themes/simple-tokyonight.rasi"
 
 //@theme "/home/roah/.config/rofi/themes/rounded-nord-dark.rasi"
-@import "/home/roah/.config/rofi/colors.rasi"
+@import "~/.config/rofi/colors.rasi"
 //@theme "/home/roah/.config/rofi/themes/rounded-nord-dark.rasi"
 //@theme "/home/roah/.config/rofi/themes/simple-tokyonight.rasi"
 
@@ -79,4 +79,4 @@
 
 //@theme "/home/roah/.config/rofi/themes/rounded-nord-dark.rasi"
 
-@theme "/home/roah/.config/rofi/themes/matugen.rasi"
+@theme "~/.config/rofi/themes/matugen.rasi"
