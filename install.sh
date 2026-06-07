@@ -96,6 +96,11 @@ if [ -f "$DOTS/hyprdots.desktop" ]; then
 else
   echo "Skipping desktop entry: hyprdots.desktop not found"
 fi
-
+echo "Wallpaper Selecton required:"
+~/.config/hypr/scripts/static-paper.sh
+hyprctl reload
 echo "Done."
-echo "Old configs backed up to: $BACKUP"
+echo "Old confiigs backed up to: $BACKUP"
+hyprctl reload
+echo "It is recommended that you sign back in for everything to work properly"
+
