@@ -181,12 +181,6 @@
 
 
 
-
-
-
-
-
-
     "custom/power_mode": {
       "format": "<span>{}</span>",
       "exec": "~/.config/waybar/scripts/power_mode_toggle.sh",
@@ -253,6 +247,7 @@
       },
       "modules": [
         "custom/controls-trigger",
+       "custom/scrcpy",
         "pulseaudio",
         "backlight",
         "custom/updates",
@@ -263,6 +258,12 @@
     "custom/controls-trigger": {
       "format": ":::",
       "tooltip": false
+    },
+    "custom/scrcpy": {
+      "format": "󰨵",
+      "tooltip": true,
+      "on-click": "scrcpy",
+      "tooltip-format": "Use your phone through your laptop"
     },
 
     "pulseaudio": {
