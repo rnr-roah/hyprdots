@@ -1,32 +1,6 @@
-import Quickshell
-import Quickshell.Io
-import Quickshell.Wayland
-import Quickshell.Hyprland
-import QtQuick
-import Quickshell.Services.SystemTray
-import  "./components"
+import Quickshellimport Quickshell.Ioimport Quickshell.Waylandimport Quickshell.Hyprlandimport QtQuickimport Quickshell.Services.SystemTray
 
-PanelWindow {
-    id: root
-
-    mask: Region {
-        item: sideBg
-    }
-
-anchors {
-    left: true
-    top: true
-    bottom: true
-}
-    property color colBg: "#050a2d"
-    property color colFg: "#a9b1d6"
-    property color colWhite: "#ffffff"
-    property color colMuted: "#5d668f"
-    property color colCyan: "#0db9d7"
-    property color colBlue: "#7aa2f7"
-    property color colYellow: "#e0af68"
-    property string fontFamily: "JetBrainsMono Nerd Font"
-    property int fontSize: 14
+PanelWindow {id: rootmask: Region {item: sideBg}property color colBg: "#050a2d"property color colFg: "#a9b1d6"property color colWhite: "#ffffff"property color colMuted: "#5d668f"property color colCyan: "#0db9d7"property color colBlue: "#7aa2f7"property color colYellow: "#e0af68"property string fontFamily: "JetBrainsMono Nerd Font"property int fontSize: 14
 
 property int cpuUsage: 0
 property var lastCpuIdle: 0
@@ -57,9 +31,11 @@ property string bluetoothText: "Off"
 property bool showWifiList: false
 property var wifiNetworks: []
 
-
-
-
+anchors {
+    left: true
+    top: true
+    bottom: true
+}
 
 width: 500
 exclusiveZone: 50
@@ -268,7 +244,14 @@ Rectangle {
     }
 
     width: root.activePanel !== "" ? 270 : 36
-   height: sideColumn.implicitHeight + 20
+   height: root.activePanel === "wifiList"
+        ? 210
+        : Math.max(
+            sideColumn.implicitHeight,
+            mediaPanel.implicitHeight,
+            batteryPanel.implicitHeight,
+            connectivityPanel.implicitHeight
+        ) + 20
     radius: 18
     color: root.colBg
     clip: true
@@ -381,8 +364,7 @@ Rectangle {
                 height: 1
             }
 
-// quick wifi and battery module
-            Rectangle {id: quickStatusGroup
+// quick wifi and battery moduleRectangle {id: quickStatusGroup
 
             anchors.horizontalCenter: parent.horizontalCenter
 
@@ -398,8 +380,7 @@ Rectangle {
                 anchors.centerIn: parent
                 spacing: 6
 
-// wifi canvas
-                Canvas {id: wifiCanvas
+// wifi canvasCanvas {id: wifiCanvas
 
                 anchors.horizontalCenter: parent.horizontalCenter
 
@@ -459,8 +440,7 @@ Rectangle {
                 }
             }
 
-// mini battery symbol
-                Item {id: batteryMini
+// mini battery symbolItem {id: batteryMini
 
                     anchors.horizontalCenter: parent.horizontalCenter
 
@@ -584,16 +564,7 @@ Rectangle {
                     }
                 }                
 
-}
-VolumeOsd {
-    colBg: root.colBg
-    colFg: root.colFg
-    colBlue: root.colBlue
-    colMuted: root.colMuted
-    fontFamily: root.fontFamily
-}
-// battery panel
-            Column {id: batteryPanel
+}//battery panelColumn {id: batteryPanel
 
                 width: root.activePanel === "battery" ? 210 : 0
                 opacity: root.activePanel === "battery" ? 1 : 0
@@ -652,7 +623,7 @@ VolumeOsd {
                             Text {
                                 anchors.centerIn: parent
                                 text: root.batteryPercent + ""
-                                color: "transparent"
+                                color: transparent
                                 font.bold: true
                             }
                             id: batteryFill
@@ -713,173 +684,42 @@ VolumeOsd {
 
             }
 
-// connectivity / quick settings panel
-Column {
-    id: connectivityPanel
+// connectivity panelColumn {id: connectivityPanel
 
-    width: root.activePanel === "connectivity" ? 210 : 0
-    height: root.activePanel === "connectivity" ? sideColumn.implicitHeight : 0
-    opacity: root.activePanel === "connectivity" ? 1 : 0
+            width: root.activePanel === "connectivity" ? 210 : 0
+            opacity: root.activePanel === "connectivity" ? 1 : 0
+            clip: true
+            spacing: 12
 
-    clip: true
-    spacing: 12
-
-    Text {
-        text: "Quick Settings"
-        color: root.colBlue
-        font.family: root.fontFamily
-        font.pixelSize: 16
-        font.bold: true
-    }
-
-    Row {
-        spacing: 10
-
-        // Big battery card on the left.
-        // Clicking it opens the full battery panel.
-        Rectangle {
-            width: 90
-            height: 144
-            radius: 16
-
-            color: "#0b1238"
-            border.width: 1
-            border.color: "#1f2a5a"
-
-            Item {
-                anchors.fill: parent
-                anchors.margins: 10
-
-                // Battery outline
-                Rectangle {
-                    id: qsBatteryOutline
-
-                    anchors.bottom: parent.bottom
-                    anchors.horizontalCenter: parent.horizontalCenter
-
-                    width: parent.width - 5
-                    height: parent.height - 5
-                    radius: 8
-
-                    color: "transparent"
-                    border.width: 2
-                    border.color: root.batteryCharging
-                        ? "#50fa7b"
-                        : root.batteryPercent <= 20
-                            ? "#ff5555"
-                            : root.colFg
-                }
-
-                // Battery nub
-                Rectangle {
-                    anchors.horizontalCenter: qsBatteryOutline.horizontalCenter
-                    anchors.bottom: qsBatteryOutline.top
-                    anchors.bottomMargin: -2
-
-                    width: 12
-                    height: 5
-                    radius: 2
-
-                    color: qsBatteryOutline.border.color
-                }
-
-                // Battery fill
-                Rectangle {
-                    id: qsBatteryFill
-
-                    property real chargeAnim: 0.0005
-
-                    anchors.bottom: qsBatteryOutline.bottom
-                    anchors.bottomMargin: 4
-                    anchors.horizontalCenter: qsBatteryOutline.horizontalCenter
-
-                    width: qsBatteryOutline.width - 8
-
-                    height: Math.max(
-                        6,
-                        (qsBatteryOutline.height - 8) *
-                        (root.batteryCharging ? chargeAnim : root.batteryPercent / 100)
-                    )
-
-                    radius: 4
-
-                    color: root.batteryCharging
-                        ? "#50fa7b"
-                        : root.batteryPercent > 40
-                            ? "#50fa7b"
-                            : root.batteryPercent > 15
-                                ? "#ffb86c"
-                                : "#ff5555"
-
-                    NumberAnimation on chargeAnim {
-                        running: root.batteryCharging
-                        loops: Animation.Infinite
-                        from: Math.max(0.05, root.batteryPercent / 100)
-                        to: 1.0
-                        duration: 1200
-                        easing.type: Easing.InOutCubic
-                    }
-
-                    Behavior on height {
-                        enabled: !root.batteryCharging
-
-                        NumberAnimation {
-                            duration: 250
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 250
-                        }
-                    }
-                }
-                Text {
-                    z: 10
-
-                    anchors.horizontalCenter: qsBatteryFill.horizontalCenter
-
-                    y: qsBatteryFill.y + (qsBatteryFill.height / 2) - (height / 2)
-
-                    text: root.batteryPercent //+ "%"
-
-                    color: root.batteryPercent > 40
-                        ? root.colBg
-                        : "#000000"
-
-                    font.family: root.fontFamily
-                    font.pixelSize: 11
-                    font.bold: true
-                }
+            Text {
+                text: "Connectivity"
+                color: root.colBlue
+                font.family: root.fontFamily
+                font.pixelSize: 16
+                font.bold: true
             }
-
-            MouseArea {
-                anchors.fill: parent
-
-                onClicked: {
-                    root.activePanel = "battery"
-                }
-            }
-        }
-
-        // WiFi and Bluetooth cards on the right
-        Column {
-            spacing: 10
 
             Rectangle {
-                width: 110
-                height: 67
+                width: 190
+                height: root.showWifiList ? 220 : 64
                 radius: 16
 
                 color: "#0b1238"
                 border.width: 1
                 border.color: "#1f2a5a"
+                clip: true
+
+                Behavior on height {
+                    NumberAnimation {
+                        duration: 220
+                        easing.type: Easing.OutCubic
+                    }
+                }
 
                 Column {
                     anchors.fill: parent
-                    anchors.margins: 10
-                    spacing: 4
+                    anchors.margins: 12
+                    spacing: 8
 
                     Text {
                         text: "WiFi"
@@ -890,43 +730,43 @@ Column {
                     }
 
                     Text {
-                        width: parent.width
-
                         text: root.wifiConnected
-                            ? root.wifiSsid
+                            ? root.wifiSsid + "  " + root.wifiStrength + "%"
                             : "Disconnected"
 
                         color: root.wifiConnected ? root.colBlue : root.colMuted
-
                         font.family: root.fontFamily
-                        font.pixelSize: 10
-
-                        elide: Text.ElideRight
+                        font.pixelSize: 11
                     }
+
+                    Text {
+                        text: root.showWifiList ? "Hide networks" : "Show networks"
+                        color: root.colBlue
+                        font.family: root.fontFamily
+                        font.pixelSize: 11
+                        font.bold: true
+                    }
+
                 }
-
                 MouseArea {
-                    anchors.fill: parent
-
-                    onClicked: {
-                        wifiListProc.running = true
-                        root.activePanel = "wifiList"
-                    }
+                anchors.fill: parent
+                onClicked: {
+                    wifiListProc.running = true
+                    root.activePanel = "wifiList"
                 }
             }
-
+            }
             Rectangle {
-                width: 110
-                height: 67
+                width: 190
+                height: 64
                 radius: 16
-
                 color: "#0b1238"
                 border.width: 1
                 border.color: "#1f2a5a"
 
                 Column {
                     anchors.fill: parent
-                    anchors.margins: 10
+                    anchors.margins: 12
                     spacing: 4
 
                     Text {
@@ -939,31 +779,20 @@ Column {
 
                     Text {
                         text: root.bluetoothText
-
-                        color: root.bluetoothPowered
-                            ? root.colBlue
-                            : root.colMuted
-
+                        color: root.bluetoothPowered ? root.colBlue : root.colMuted
                         font.family: root.fontFamily
-                        font.pixelSize: 10
+                        font.pixelSize: 11
                     }
                 }
 
                 MouseArea {
                     anchors.fill: parent
-
-                    onClicked: {
-                        Hyprland.dispatch("exec blueman-manager")
-                    }
+                    onClicked: Hyprland.dispatch("exec blueman-manager")
                 }
             }
         }
-    }
-}
 
-// media panel
-            Column {
-                id: mediaPanel
+// media panelColumn {id: mediaPanel
 
             width: root.activePanel === "media" && root.mediaStatus !== "Stopped" ? 210 : 0
             opacity: root.activePanel === "media" && root.mediaStatus !== "Stopped" ? 1 : 0
@@ -1039,11 +868,10 @@ Column {
             }
         }
 
-// wifi list panel
-            Column {id: wifiListPanel
+wifi list panelColumn {id: wifiListPanel
 
             width: root.activePanel === "wifiList" ? 210 : 0
-            height: root.activePanel === "wifiList" ? sideColumn.implicitHeight : 0
+            height: root.activePanel === "wifiList" ? 280 : 0
             opacity: root.activePanel === "wifiList" ? 1 : 0
             clip: true
             spacing: 10
@@ -1065,7 +893,7 @@ Column {
 
             Flickable {
                 width: 190
-                height: Math.max(120, sideColumn.implicitHeight - 55)
+                height: 210
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
 
