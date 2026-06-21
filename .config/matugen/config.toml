@@ -6,11 +6,23 @@ post_hook   = 'pkill -SIGUSR2 waybar && hyprctl reload'
 [templates.hyprland]
 input_path  = '~/.config/matugen/templates/hyprland.conf'
 output_path = '~/.config/hypr/matugen-colors.conf'
+
 [templates.hyprlock]
 input_path  = '~/.config/matugen/templates/hyprlock-colors.sh'
 output_path = '~/.config/hypr/hyprlock-colors.sh'
+
 [templates.rofi]
 input_path  = "~/.config/matugen/templates/rofi.rasi"
 output_path = "~/.config/rofi/themes/matugen.rasi"
+
 [config]
 post_hook = 'pkill -SIGUSR2 waybar && hyprctl reload'
+
+[templates.quickshell]
+input_path = '~/.config/matugen/templates/quickshell-colors.qml'
+output_path = '~/.config/quickshell/MatugenColors.qml'\
+
+[templates.waylandar]
+input_path = "~/.config/waylandar/theme_template.qml"
+output_path = "~/.config/waylandar/frontend/Theme.qml"
+output_path = "~/.config/waylandar/theme_template.qml"

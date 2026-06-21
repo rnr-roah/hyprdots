@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-DEVICE="at-translated-set-2-keyboard"
-STATE_FILE="/tmp/laptop-keyboard-disabled"
+DEV="/dev/input/by-path/platform-i8042-serio-0-event-kbd"
+PID_FILE="/tmp/laptop-keyboard-grab.pid"
 
-if [ -f "$STATE_FILE" ]; then
-    hyprctl keyword "device[at-translated-set-2-keyboard]:enabled" true
-    rm "$STATE_FILE"
+if [[ -f "$PID_FILE" ]] && sudo kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+    sudo kill "$(cat "$PID_FILE")"
+    rm -f "$PID_FILE"
     notify-send "Laptop keyboard enabled"
 else
-    hyprctl keyword "device[at-translated-set-2-keyboard]:enabled" false
-    touch "$STATE_FILE"
+    sudo evtest --grab "$DEV" >/dev/null 2>&1 &
+    echo $! > "$PID_FILE"
     notify-send "Laptop keyboard disabled"
 fi

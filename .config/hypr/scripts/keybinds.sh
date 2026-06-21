@@ -1,15 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 STATE_FILE="/tmp/hypr_gaming_mode"
 
-if [ -f "$STATE_FILE" ]; then
-    # Gaming mode is ON, turn it off
+set_submap() {
+    hyprctl dispatch "hl.dsp.submap(\"$1\")"
+}
+
+if [[ -f "$STATE_FILE" ]]; then
     rm "$STATE_FILE"
-    hyprctl dispatch submap reset
+    set_submap "reset"
     notify-send -u critical "System" "OFF - Normal binds restored"
 else
-    # Gaming mode is OFF, turn it on
     touch "$STATE_FILE"
-    hyprctl dispatch submap gaming
+    set_submap "gaming"
     notify-send -u critical "System" "ON - Hotkeys unbound"
 fi

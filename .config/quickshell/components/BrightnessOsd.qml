@@ -11,80 +11,46 @@ Scope {
     property color colBlue: "#7aa2f7"
     property color colMuted: "#5d668f"
     property string fontFamily: "JetBrainsMono Nerd Font"
-    property bool volumeInitialized: false
 
-    property int volumePercent: 0
-    property bool volumeMuted: false
+    property int brightnessPercent: 0
     property bool osdVisible: false
 
+    // Prevent OSD from popping up once on QS startup.
+    property bool initialized: false
+
+    // Watches brightness changes by polling /sys/class/backlight.
+    // This works no matter what changes brightness:
+    // brightnessctl, swayosd, keybinds, KDE settings, etc.
     Process {
-    id: volumeWatchProc
+        id: brightnessWatchProc
 
-    command: ["sh", "-c", "pactl subscribe"]
+        command: [
+            "sh",
+            "-c",
+            "dev=$(ls -d /sys/class/backlight/* 2>/dev/null | head -n1); [ -z \"$dev\" ] && exit 0; last=\"\"; while true; do cur=$(cat \"$dev/brightness\" 2>/dev/null || echo 0); max=$(cat \"$dev/max_brightness\" 2>/dev/null || echo 1); pct=$((cur * 100 / max)); if [ \"$pct\" != \"$last\" ]; then echo \"$pct\"; last=\"$pct\"; fi; sleep 0.15; done"
+        ]
 
-    stdout: SplitParser {
-        onRead: data => {
-            // Important:
-            // "sink-input" happens when apps/videos update audio sessions.
-            // We only want real sink/server events.
-            var isSinkEvent = data.includes(" on sink ")
-            var isServerEvent = data.includes(" on server ")
+        stdout: SplitParser {
+            onRead: data => {
+                var pct = parseInt(data.trim())
 
-            if (isSinkEvent || isServerEvent) {
-                volumeReadProc.running = false
-                volumeReadProc.running = true
-            }
-        }
-    }
+                if (!isNaN(pct)) {
+                    root.brightnessPercent = Math.max(0, Math.min(100, pct))
 
-    Component.onCompleted: {
-        running = true
-    }
-}
-
-    Process {
-    id: volumeReadProc
-
-    command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@"]
-
-    stdout: SplitParser {
-        onRead: data => {
-            var muted = data.includes("MUTED")
-            var match = data.match(new RegExp("([0-9]+\\.[0-9]+)"))
-
-            if (match) {
-                var newPercent = Math.round(parseFloat(match[1]) * 100)
-                var newMuted = muted
-
-                var changed =
-                    root.volumeInitialized
-                    && (
-                        newPercent !== root.volumePercent
-                        || newMuted !== root.volumeMuted
-                    )
-
-                root.volumePercent = newPercent
-                root.volumeMuted = newMuted
-
-                // First read should initialize silently.
-                if (!root.volumeInitialized) {
-                    root.volumeInitialized = true
-                    return
-                }
-
-                // Only show OSD when volume/mute actually changed.
-                if (changed) {
-                    root.osdVisible = true
-                    hideTimer.restart()
+                    if (root.initialized) {
+                        root.osdVisible = true
+                        hideTimer.restart()
+                    } else {
+                        root.initialized = true
+                    }
                 }
             }
         }
-    }
 
-    Component.onCompleted: {
-        running = true
+        Component.onCompleted: {
+            running = true
+        }
     }
-}
 
     Timer {
         id: hideTimer
@@ -122,12 +88,12 @@ Scope {
             width: 100
             height: 560
 
-            // Shape tuning
-            property real bodyX: 62          // left straight wall; bigger = thinner body
-            property real bodyTop: 100       // where straight wall starts
+            // Same shape tuning as VolumeOsd.
+            property real bodyX: 62
+            property real bodyTop: 100
             property real bodyBottom: height - bodyTop
-            property real cornerSoft: 48     // roundness at the two mouth corners
-            property real edgeSoft: 40       // softness near screen edge
+            property real cornerSoft: 48
+            property real edgeSoft: 40
 
             x: root.osdVisible ? parent.width - width : parent.width
             anchors.verticalCenter: parent.verticalCenter
@@ -168,23 +134,17 @@ Scope {
 
                     ctx.beginPath()
 
-                    // Right edge: flush with screen side.
                     ctx.moveTo(w, 0)
                     ctx.lineTo(w, h)
 
-                    // Bottom concave tear curve.
-                    // Smoothly enters the straight wall.
                     ctx.bezierCurveTo(
                         w - 2, h - edgeSoft,
                         bodyX, bodyBottom + cornerSoft,
                         bodyX, bodyBottom
                     )
 
-                    // Straight left wall beside the volume meter.
                     ctx.lineTo(bodyX, bodyTop)
 
-                    // Top concave tear curve.
-                    // Smoothly exits the straight wall.
                     ctx.bezierCurveTo(
                         bodyX, bodyTop - cornerSoft,
                         w - 2, edgeSoft,
@@ -208,7 +168,6 @@ Scope {
 
                 width: 42
 
-                // Keep content centered inside the visible body area.
                 x: osdBox.bodyX
                     + ((osdBox.width - osdBox.bodyX) / 2)
                     - (width / 2)
@@ -219,13 +178,9 @@ Scope {
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
 
-                    text: root.volumeMuted
-                        ? "M"
-                        : root.volumePercent + ""
+                    text: root.brightnessPercent + ""
 
-                    color: root.volumeMuted
-                        ? root.colMuted
-                        : root.colFg
+                    color: root.colFg
 
                     font.family: root.fontFamily
                     font.pixelSize: 11
@@ -233,7 +188,7 @@ Scope {
                 }
 
                 Rectangle {
-                    id: volumeTrack
+                    id: brightnessTrack
 
                     anchors.horizontalCenter: parent.horizontalCenter
 
@@ -244,33 +199,24 @@ Scope {
                     color: "#1f2a5a"
 
                     Rectangle {
-                        id: volumeFill
+                        id: brightnessFill
 
                         anchors.bottom: parent.bottom
                         anchors.horizontalCenter: parent.horizontalCenter
 
                         width: parent.width
 
-                        height: root.volumeMuted
-                            ? 0
-                            : parent.height * Math.min(root.volumePercent, 100) / 100
+                        height: parent.height * root.brightnessPercent / 100
 
                         radius: 6
 
-                        color: root.volumeMuted
-                            ? root.colMuted
-                            : root.colBlue
+                        // Keeping same accent as volume for identical look.
+                        color: root.colBlue
 
                         Behavior on height {
                             NumberAnimation {
                                 duration: 140
                                 easing.type: Easing.OutCubic
-                            }
-                        }
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 140
                             }
                         }
                     }
@@ -279,11 +225,10 @@ Scope {
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
 
-                    text: root.volumeMuted ? "󰝟" : "󰕾"
+                    // Brightness / sun icon
+                    text: "󰃠"
 
-                    color: root.volumeMuted
-                        ? root.colMuted
-                        : root.colFg
+                    color: root.colFg
 
                     font.family: root.fontFamily
                     font.pixelSize: 15
