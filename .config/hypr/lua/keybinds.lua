@@ -152,10 +152,10 @@ hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
 hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }))
 
 -- Move/resize windows with mouse and side buttons
---hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
---hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
---hl.bind("mouse:276", hl.dsp.window.drag(), { mouse = true })
---hl.bind("mouse:275", hl.dsp.window.resize(), { mouse = true })
+hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
+hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
+hl.bind("mouse:276", hl.dsp.window.drag(), { mouse = true })
+hl.bind("mouse:275", hl.dsp.window.resize(), { mouse = true })
 
 -- Screenshots / recorder. Note: your old file has SUPER+C twice; both are preserved.
 hl.bind(mainMod .. " + C", exec("hyprshot -z -m region --clipboard-only"))

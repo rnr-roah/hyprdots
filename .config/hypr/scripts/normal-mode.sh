@@ -6,7 +6,7 @@ pkill -x waybar
 sleep 0.2
 
 
-"$HOME/.config/hypr/scripts/wallpaper-restore.sh" & disown
+~/.config/hypr/scripts/wallpaper-restore.sh & disown
 
 pkill -x hypridle & disown
 sleep 0.2
