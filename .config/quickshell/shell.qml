@@ -58,6 +58,29 @@ PanelWindow {
     property bool displayGameMode: false
     property string displayIcon: "󰍹"
 
+    property bool gameModeActive: false
+    property bool nightLightActive: false
+    property int volumePercent: 0
+    property int brightnessPercent: 0
+
+    // Main pill auto-hide state. When enabled, the pill collapses into a thin
+    // hover strip while no panel is open.
+    property bool barAutoHide: false
+    property bool barHovering: false
+    property bool barCollapsed: barAutoHide && !barHovering && activePanel === ""
+
+    property var kdeConnectDevices: []
+    property string kdeConnectDeviceId: ""
+    property string kdeConnectDeviceName: "No device"
+    property bool kdeConnectAvailable: false
+    property string kdeConnectStatusText: "No device"
+    property int kdeConnectBatteryPercent: -1
+
+    property bool adbPhoneConnected: false
+    property bool adbPhoneReady: false
+    property string adbPhoneSerial: ""
+    property string adbPhoneText: "No phone"
+
     property string mediaIcon: ""
     property string mediaStatus: "Stopped"
     property string activePanel: ""
@@ -132,6 +155,219 @@ PanelWindow {
         root.dateDateText = date < 10 ? "0" + date : "" + date
     }
 
+
+    // =========================
+    // CALENDAR / GOOGLE DASHBOARD STATE
+    // =========================
+    property var calendarAllEvents: []
+    property var calendarAvailableCalendars: []
+    property var calendarSelectedCalendarIds: ({})
+    property string calendarSelectedDateStr: ""
+    property int calendarCurrentViewYear: new Date().getFullYear()
+    property int calendarCurrentViewMonth: new Date().getMonth()
+    property var calendarMonthDays: []
+    property string calendarCurrentMonthStr: ""
+    property string calendarAuthError: ""
+    property bool calendarFetching: false
+    property string calendarProvider: "google"
+    property int calendarExpandedEventIndex: -1
+
+    property var calendarDisplayedEvents: {
+        let evs = calendarAllEvents.filter(function(e) {
+            return !e.calendar_id || calendarSelectedCalendarIds[e.calendar_id] === true
+        })
+
+        if (calendarSelectedDateStr === "") {
+            let now = new Date()
+
+            if (calendarCurrentViewYear === now.getFullYear()
+                && calendarCurrentViewMonth === now.getMonth()) {
+                let todayStr = now.toDateString()
+
+                return evs.filter(function(e) {
+                    let d = root.calendarStartDate(e)
+                    let endD = root.calendarEndDate(e, d)
+
+                    return d >= now || endD >= now || d.toDateString() === todayStr
+                })
+            }
+
+            return evs
+        }
+
+        return evs.filter(function(e) {
+            return root.calendarStartDate(e).toDateString() === calendarSelectedDateStr
+        })
+    }
+
+    property var calendarActiveEventDays: {
+        let active = {}
+
+        for (let i = 0; i < calendarAllEvents.length; i++) {
+            let e = calendarAllEvents[i]
+
+            if (e.calendar_id && calendarSelectedCalendarIds[e.calendar_id] !== true)
+                continue
+
+            active[root.calendarStartDate(e).toDateString()] = true
+        }
+
+        return active
+    }
+
+    function calendarIsAllDay(eventData) {
+        return eventData && eventData.start && eventData.start.length === 10
+    }
+
+    function calendarStartDate(eventData) {
+        if (!eventData || !eventData.start)
+            return new Date()
+
+        if (eventData.start.length === 10) {
+            let parts = eventData.start.split("-")
+            return new Date(parts[0], parts[1] - 1, parts[2], 0, 0, 0)
+        }
+
+        return new Date(eventData.start)
+    }
+
+    function calendarEndDate(eventData, fallbackDate) {
+        let d = fallbackDate || root.calendarStartDate(eventData)
+
+        if (!eventData || !eventData.end)
+            return d
+
+        if (eventData.end.length === 10) {
+            let parts = eventData.end.split("-")
+            return new Date(parts[0], parts[1] - 1, parts[2], 23, 59, 59)
+        }
+
+        return new Date(eventData.end)
+    }
+
+    function calendarEventTimeText(eventData) {
+        if (!eventData)
+            return ""
+
+        let loc = Qt.locale("en_US")
+        let start = root.calendarStartDate(eventData)
+        let end = root.calendarEndDate(eventData, start)
+        let calName = eventData.calendar_name || "Calendar"
+
+        if (root.calendarIsAllDay(eventData))
+            return start.toLocaleDateString(loc, "ddd MMM d") + " • All day • " + calName
+
+        let timeRange = start.toLocaleDateString(loc, "ddd MMM d")
+            + " • "
+            + start.toLocaleTimeString(loc, "h:mm AP")
+
+        if (eventData.end && eventData.end !== eventData.start)
+            timeRange += " - " + end.toLocaleTimeString(loc, "h:mm AP")
+
+        return timeRange + " • " + calName
+    }
+
+    function calendarSelectedTitle() {
+        if (calendarSelectedDateStr === "")
+            return "Agenda"
+
+        return "Agenda - "
+            + new Date(calendarSelectedDateStr).toLocaleDateString(Qt.locale("en_US"), "ddd, MMM d")
+    }
+
+    function calendarUpdateMonthGrid() {
+        let year = calendarCurrentViewYear
+        let month = calendarCurrentViewMonth
+
+        let d = new Date(year, month, 1)
+        calendarCurrentMonthStr = d.toLocaleDateString(Qt.locale("en_US"), "MMMM yyyy")
+
+        let lastDay = new Date(year, month + 1, 0)
+        let startOffset = d.getDay()
+        let daysArray = []
+
+        for (let i = startOffset - 1; i >= 0; i--) {
+            let pd = new Date(year, month, -i)
+            daysArray.push({
+                dayNum: pd.getDate(),
+                isCurrentMonth: false,
+                dateStr: pd.toDateString()
+            })
+        }
+
+        for (let i = 1; i <= lastDay.getDate(); i++) {
+            let cd = new Date(year, month, i)
+            daysArray.push({
+                dayNum: i,
+                isCurrentMonth: true,
+                dateStr: cd.toDateString()
+            })
+        }
+
+        let remaining = 42 - daysArray.length
+
+        for (let i = 1; i <= remaining; i++) {
+            let nd = new Date(year, month + 1, i)
+            daysArray.push({
+                dayNum: nd.getDate(),
+                isCurrentMonth: false,
+                dateStr: nd.toDateString()
+            })
+        }
+
+        calendarMonthDays = daysArray
+        calendarSelectedDateStr = ""
+        calendarExpandedEventIndex = -1
+    }
+
+    function calendarRefresh() {
+        calendarFetching = true
+        calendarFetchProc.running = false
+        calendarFetchProc.running = true
+    }
+
+    function calendarPreviousMonth() {
+        calendarCurrentViewMonth--
+
+        if (calendarCurrentViewMonth < 0) {
+            calendarCurrentViewMonth = 11
+            calendarCurrentViewYear--
+        }
+
+        root.calendarUpdateMonthGrid()
+        root.calendarRefresh()
+    }
+
+    function calendarNextMonth() {
+        calendarCurrentViewMonth++
+
+        if (calendarCurrentViewMonth > 11) {
+            calendarCurrentViewMonth = 0
+            calendarCurrentViewYear++
+        }
+
+        root.calendarUpdateMonthGrid()
+        root.calendarRefresh()
+    }
+
+    function calendarToggleCalendar(calendarId) {
+        let sel = Object.assign({}, calendarSelectedCalendarIds)
+
+        if (sel[calendarId])
+            delete sel[calendarId]
+        else
+            sel[calendarId] = true
+
+        calendarSelectedCalendarIds = sel
+        calendarSaveSelectedProc.payload = JSON.stringify(sel)
+        calendarSaveDebounceTimer.restart()
+    }
+
+    Component.onCompleted: {
+        root.calendarUpdateMonthGrid()
+        root.calendarRefresh()
+    }
+
     // Shared hover/active styling helpers.
     // Use these on small cards/buttons so all interactions feel consistent.
     function cardBg(active, hovered) {
@@ -153,8 +389,8 @@ PanelWindow {
     }
 
 
-    width: 500
-    exclusiveZone: 50
+    width: root.activePanel === "calendar" ? 980 : 500
+    exclusiveZone: root.barAutoHide ? 0 : 50
     color: "transparent"
 
     VolumeOsd {
@@ -166,6 +402,14 @@ PanelWindow {
     }
 
     BrightnessOsd {
+        colBg: root.colBg
+        colFg: root.colFg
+        colBlue: root.colBlue
+        colMuted: root.colMuted
+        fontFamily: root.fontFamily
+    }
+
+    NotificationOsd {
         colBg: root.colBg
         colFg: root.colFg
         colBlue: root.colBlue
@@ -309,19 +553,244 @@ PanelWindow {
     }
 
     Process {
-        id: mediaProc
+        id: gameModeStatusProc
 
         command: [
             "sh",
             "-c",
-            "status=$(playerctl status 2>/dev/null || echo Stopped); " +
+            "state=$(cat ~/.cache/qs_game_mode_state 2>/dev/null || echo off); res=$(hyprctl monitors -j 2>/dev/null | jq -r '.[] | select(.name==\"eDP-1\") | (.width|tostring)+\"x\"+(.height|tostring)' 2>/dev/null); if [ \"$res\" = \"1920x1200\" ]; then echo on; elif [ \"$res\" = \"2880x1800\" ]; then echo off; else echo $state; fi"
+        ]
+
+        stdout: SplitParser {
+            onRead: data => {
+                root.gameModeActive = data.trim() === "on"
+            }
+        }
+
+        Component.onCompleted: running = true
+    }
+
+    Process {
+        id: gameModeToggleProc
+
+        // QS Process can accidentally parent/clean up long-running child processes
+        // started by the game-mode scripts. Launch the scripts in their own session
+        // so wallpaper processes like mpvpaper survive exactly like they do from
+        // your Hyprland keybinds.
+        command: [
+            "sh",
+            "-c",
+            "mkdir -p ~/.cache; " +
+            "if [ \"$1\" = \"on\" ]; then " +
+            "  echo on > ~/.cache/qs_game_mode_state; " +
+            "  setsid -f bash -lc '$HOME/.config/hypr/scripts/gamemode.sh' >/tmp/qs-gamemode-on.log 2>&1; " +
+            "else " +
+            "  echo off > ~/.cache/qs_game_mode_state; " +
+            "  setsid -f bash -lc '$HOME/.config/hypr/scripts/normal-mode.sh; $HOME/.config/hypr/scripts/wallpaper-restore.sh' >/tmp/qs-gamemode-off.log 2>&1; " +
+            "fi",
+            "sh",
+            root.gameModeActive ? "off" : "on"
+        ]
+    }
+
+    Timer {
+        id: gameModeRefreshDelay
+        interval: 350
+        repeat: false
+
+        onTriggered: {
+            gameModeStatusProc.running = false
+            gameModeStatusProc.running = true
+            displayProc.running = false
+            displayProc.running = true
+            powerProc.running = false
+            powerProc.running = true
+        }
+    }
+
+    Process {
+        id: nightLightStatusProc
+
+        command: [
+            "sh",
+            "-c",
+            "pgrep -x hyprsunset >/dev/null && echo on || echo off"
+        ]
+
+        stdout: SplitParser {
+            onRead: data => {
+                root.nightLightActive = data.trim() === "on"
+            }
+        }
+
+        Component.onCompleted: running = true
+    }
+
+    Process {
+        id: nightLightToggleProc
+
+        command: [
+            "sh",
+            "-c",
+            "if pgrep -x hyprsunset >/dev/null; then pkill -x hyprsunset; else nohup hyprsunset --gamma 70 --temperature 4000 >/dev/null 2>&1 & fi"
+        ]
+    }
+
+    Timer {
+        id: nightLightRefreshDelay
+        interval: 250
+        repeat: false
+
+        onTriggered: {
+            nightLightStatusProc.running = false
+            nightLightStatusProc.running = true
+        }
+    }
+
+    Process {
+        id: barAutoHideLoadProc
+
+        command: [
+            "sh",
+            "-c",
+            "cat ~/.cache/qs_bar_autohide 2>/dev/null || echo off"
+        ]
+
+        stdout: SplitParser {
+            onRead: data => {
+                root.barAutoHide = data.trim() === "on"
+            }
+        }
+
+        Component.onCompleted: running = true
+    }
+
+    Process {
+        id: barAutoHideSaveProc
+
+        property string state: "off"
+
+        command: [
+            "sh",
+            "-c",
+            "mkdir -p ~/.cache && printf '%s' \"$1\" > ~/.cache/qs_bar_autohide",
+            "sh",
+            state
+        ]
+    }
+
+    Process {
+        id: volumeReadProc
+
+        command: [
+            "sh",
+            "-c",
+            "wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | grep -oE '[0-9]+\\.[0-9]+' | head -1 | awk '{print int($1*100)}'"
+        ]
+
+        stdout: SplitParser {
+            onRead: data => {
+                var v = parseInt(data.trim())
+
+                if (!isNaN(v))
+                    root.volumePercent = Math.max(0, Math.min(100, v))
+            }
+        }
+
+        Component.onCompleted: running = true
+    }
+
+    Process {
+        id: volumeSetProc
+
+        property int value: 0
+
+        command: [
+            "sh",
+            "-c",
+            "wpctl set-volume @DEFAULT_AUDIO_SINK@ " + (value / 100)
+        ]
+    }
+
+    Timer {
+        id: volumeRefreshDelay
+        interval: 180
+        repeat: false
+
+        onTriggered: {
+            volumeReadProc.running = false
+            volumeReadProc.running = true
+        }
+    }
+
+    Process {
+        id: brightnessReadProc
+
+        command: [
+            "sh",
+            "-c",
+            "brightnessctl -m 2>/dev/null | cut -d, -f4 | tr -d '%'"
+        ]
+
+        stdout: SplitParser {
+            onRead: data => {
+                var b = parseInt(data.trim())
+
+                if (!isNaN(b))
+                    root.brightnessPercent = Math.max(0, Math.min(100, b))
+            }
+        }
+
+        Component.onCompleted: running = true
+    }
+
+    Process {
+        id: brightnessSetProc
+
+        property int value: 0
+
+        command: [
+            "sh",
+            "-c",
+            "brightnessctl set " + value + "%"
+        ]
+    }
+
+    Timer {
+        id: brightnessRefreshDelay
+        interval: 180
+        repeat: false
+
+        onTriggered: {
+            brightnessReadProc.running = false
+            brightnessReadProc.running = true
+        }
+    }
+
+    Process {
+        id: mediaProc
+
+        // Prefer Spotify when it is active, then fall back to any Playing/Paused MPRIS player.
+        // This avoids Chrome/YouTube stealing media status just because it appears first in playerctl -l.
+        command: [
+            "sh",
+            "-c",
+            "pick_player() { " +
+            "players=$(playerctl -l 2>/dev/null); " +
+            "for p in $players; do echo \"$p\" | grep -Eiq 'spotify' || continue; st=$(playerctl -p \"$p\" status 2>/dev/null || echo Stopped); [ \"$st\" != \"Stopped\" ] && { echo \"$p\"; return; }; done; " +
+            "for state in Playing Paused; do for p in $players; do st=$(playerctl -p \"$p\" status 2>/dev/null || echo Stopped); [ \"$st\" = \"$state\" ] && { echo \"$p\"; return; }; done; done; " +
+            "printf '%s\n' \"$players\" | head -1; " +
+            "}; " +
+            "player=$(pick_player); " +
+            "if [ -z \"$player\" ]; then jq -nc '{status:\"Stopped\"}'; exit 0; fi; " +
+            "status=$(playerctl -p \"$player\" status 2>/dev/null || echo Stopped); " +
             "if [ \"$status\" = \"Stopped\" ]; then jq -nc --arg status \"$status\" '{status:$status}'; exit 0; fi; " +
-            "title=$(playerctl metadata title 2>/dev/null || echo \"\"); " +
-            "artist=$(playerctl metadata artist 2>/dev/null || echo \"\"); " +
-            "album=$(playerctl metadata album 2>/dev/null || echo \"\"); " +
-            "art=$(playerctl metadata mpris:artUrl 2>/dev/null || echo \"\"); " +
-            "length=$(playerctl metadata mpris:length 2>/dev/null || echo 0); " +
-            "position=$(playerctl position 2>/dev/null || echo 0); " +
+            "title=$(playerctl -p \"$player\" metadata title 2>/dev/null || echo \"\"); " +
+            "artist=$(playerctl -p \"$player\" metadata artist 2>/dev/null || echo \"\"); " +
+            "album=$(playerctl -p \"$player\" metadata album 2>/dev/null || echo \"\"); " +
+            "art=$(playerctl -p \"$player\" metadata mpris:artUrl 2>/dev/null || echo \"\"); " +
+            "length=$(playerctl -p \"$player\" metadata mpris:length 2>/dev/null || echo 0); " +
+            "position=$(playerctl -p \"$player\" position 2>/dev/null || echo 0); " +
             "jq -nc --arg status \"$status\" --arg title \"$title\" --arg artist \"$artist\" --arg album \"$album\" --arg art \"$art\" --argjson length \"${length:-0}\" --argjson position \"${position:-0}\" '{status:$status,title:$title,artist:$artist,album:$album,art:$art,length:$length,position:$position}'"
         ]
 
@@ -358,17 +827,29 @@ PanelWindow {
 
     Process {
         id: mediaPlayPauseProc
-        command: ["sh", "-c", "playerctl play-pause"]
+        command: [
+            "sh",
+            "-c",
+            "pick_player() { players=$(playerctl -l 2>/dev/null); for p in $players; do echo \"$p\" | grep -Eiq 'spotify' || continue; st=$(playerctl -p \"$p\" status 2>/dev/null || echo Stopped); [ \"$st\" != \"Stopped\" ] && { echo \"$p\"; return; }; done; for state in Playing Paused; do for p in $players; do st=$(playerctl -p \"$p\" status 2>/dev/null || echo Stopped); [ \"$st\" = \"$state\" ] && { echo \"$p\"; return; }; done; done; printf '%s\n' \"$players\" | head -1; }; player=$(pick_player); [ -n \"$player\" ] && playerctl -p \"$player\" play-pause"
+        ]
     }
 
     Process {
         id: mediaPreviousProc
-        command: ["sh", "-c", "playerctl previous"]
-    } 
+        command: [
+            "sh",
+            "-c",
+            "pick_player() { players=$(playerctl -l 2>/dev/null); for p in $players; do echo \"$p\" | grep -Eiq 'spotify' || continue; st=$(playerctl -p \"$p\" status 2>/dev/null || echo Stopped); [ \"$st\" != \"Stopped\" ] && { echo \"$p\"; return; }; done; for state in Playing Paused; do for p in $players; do st=$(playerctl -p \"$p\" status 2>/dev/null || echo Stopped); [ \"$st\" = \"$state\" ] && { echo \"$p\"; return; }; done; done; printf '%s\n' \"$players\" | head -1; }; player=$(pick_player); [ -n \"$player\" ] && playerctl -p \"$player\" previous"
+        ]
+    }
 
     Process {
         id: mediaNextProc
-        command: ["sh", "-c", "playerctl next"]
+        command: [
+            "sh",
+            "-c",
+            "pick_player() { players=$(playerctl -l 2>/dev/null); for p in $players; do echo \"$p\" | grep -Eiq 'spotify' || continue; st=$(playerctl -p \"$p\" status 2>/dev/null || echo Stopped); [ \"$st\" != \"Stopped\" ] && { echo \"$p\"; return; }; done; for state in Playing Paused; do for p in $players; do st=$(playerctl -p \"$p\" status 2>/dev/null || echo Stopped); [ \"$st\" = \"$state\" ] && { echo \"$p\"; return; }; done; done; printf '%s\n' \"$players\" | head -1; }; player=$(pick_player); [ -n \"$player\" ] && playerctl -p \"$player\" next"
+        ]
     }
 
     Process {
@@ -376,7 +857,11 @@ PanelWindow {
 
         property int seekTo: 0
 
-        command: ["sh", "-c", "playerctl position " + seekTo]
+        command: [
+            "sh",
+            "-c",
+            "pick_player() { players=$(playerctl -l 2>/dev/null); for p in $players; do echo \"$p\" | grep -Eiq 'spotify' || continue; st=$(playerctl -p \"$p\" status 2>/dev/null || echo Stopped); [ \"$st\" != \"Stopped\" ] && { echo \"$p\"; return; }; done; for state in Playing Paused; do for p in $players; do st=$(playerctl -p \"$p\" status 2>/dev/null || echo Stopped); [ \"$st\" = \"$state\" ] && { echo \"$p\"; return; }; done; done; printf '%s\n' \"$players\" | head -1; }; player=$(pick_player); [ -n \"$player\" ] && playerctl -p \"$player\" position " + seekTo
+        ]
     }
 
     Timer {
@@ -468,6 +953,184 @@ PanelWindow {
     }
 
     Process {
+        id: kdeConnectDevicesProc
+
+        command: [
+            "sh",
+            "-c",
+            "kdeconnect-cli --refresh >/dev/null 2>&1; " +
+            "(kdeconnect-cli -a --id-name-only 2>/dev/null || kdeconnect-cli --list-devices --id-name-only 2>/dev/null || true)"
+        ]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+
+            onStreamFinished: {
+                var devices = []
+                var lines = text.trim().length > 0 ? text.trim().split(/\n/) : []
+
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i].trim()
+
+                    if (line.length === 0)
+                        continue
+
+                    var parts = line.split(/\s+/)
+                    var id = parts.shift()
+                    var name = parts.join(" ").trim()
+
+                    if (!id || id.length < 4 || id.toLowerCase().indexOf("no") === 0)
+                        continue
+
+                    devices.push({
+                        id: id,
+                        name: name.length > 0 ? root.safeMediaText(name) : "Phone"
+                    })
+                }
+
+                root.kdeConnectDevices = devices
+                root.kdeConnectAvailable = devices.length > 0
+
+                var selectedStillExists = false
+
+                for (var j = 0; j < devices.length; j++) {
+                    if (devices[j].id === root.kdeConnectDeviceId) {
+                        selectedStillExists = true
+                        root.kdeConnectDeviceName = devices[j].name
+                        break
+                    }
+                }
+
+                if (!selectedStillExists) {
+                    if (devices.length > 0) {
+                        root.kdeConnectDeviceId = devices[0].id
+                        root.kdeConnectDeviceName = devices[0].name
+                    } else {
+                        root.kdeConnectDeviceId = ""
+                        root.kdeConnectDeviceName = "No device"
+                        root.kdeConnectBatteryPercent = -1
+                    }
+                }
+
+                root.kdeConnectStatusText = root.kdeConnectAvailable
+                    ? root.kdeConnectDeviceName
+                    : (root.adbPhoneConnected ? "USB phone" : "No device")
+
+                if (root.kdeConnectDeviceId !== "") {
+                    kdeConnectBatteryProc.running = false
+                    kdeConnectBatteryProc.running = true
+                }
+            }
+        }
+
+        Component.onCompleted: running = true
+    }
+
+    Process {
+        id: kdeConnectBatteryProc
+
+        command: [
+            "sh",
+            "-c",
+            'if [ -n "$1" ]; then kdeconnect-cli -d "$1" --battery 2>/dev/null | grep -oE "[0-9]+%" | head -1 | tr -d "%"; fi',
+            "sh",
+            root.kdeConnectDeviceId
+        ]
+
+        stdout: SplitParser {
+            onRead: data => {
+                var b = parseInt(data.trim())
+
+                if (!isNaN(b))
+                    root.kdeConnectBatteryPercent = Math.max(0, Math.min(100, b))
+            }
+        }
+    }
+
+    Process {
+        id: kdeConnectActionProc
+
+        property string action: "refresh"
+        property string deviceId: root.kdeConnectDeviceId
+
+        command: [
+            "sh",
+            "-c",
+            'case "$1" in ' +
+            'open) setsid -f sh -lc "kdeconnect-app 2>/dev/null || kdeconnect-settings 2>/dev/null || kdeconnect-cli -a" >/tmp/qs-kdeconnect.log 2>&1 ;; ' +
+            'refresh) kdeconnect-cli --refresh >/dev/null 2>&1 ;; ' +
+            'ping) [ -n "$2" ] && kdeconnect-cli -d "$2" --ping >/dev/null 2>&1 ;; ' +
+            'ring) [ -n "$2" ] && (kdeconnect-cli -d "$2" --ring >/dev/null 2>&1 || kdeconnect-cli -d "$2" --findmyphone >/dev/null 2>&1 || kdeconnect-cli -d "$2" --ping >/dev/null 2>&1) ;; ' +
+            'pair) [ -n "$2" ] && kdeconnect-cli -d "$2" --pair >/dev/null 2>&1 ;; ' +
+            'esac',
+            "sh",
+            action,
+            deviceId
+        ]
+    }
+
+    Timer {
+        id: kdeConnectRefreshDelay
+        interval: 350
+        repeat: false
+
+        onTriggered: {
+            kdeConnectDevicesProc.running = false
+            kdeConnectDevicesProc.running = true
+        }
+    }
+
+    Process {
+        id: phoneDetectProc
+
+        command: [
+            "sh",
+            "-c",
+            'line=$(adb devices 2>/dev/null | tail -n +2 | grep -m1 -E "[[:space:]](device|unauthorized|offline)$" | tr -s "[:space:]" "|"); ' +
+            'if [ -n "$line" ]; then ' +
+            '  serial="${line%%|*}"; state="${line##*|}"; ' +
+            '  case "$state" in ' +
+            '    device) echo "device|$serial|ADB Ready" ;; ' +
+            '    unauthorized) echo "unauthorized|$serial|Allow USB Debug" ;; ' +
+            '    offline) echo "offline|$serial|Phone Offline" ;; ' +
+            '    *) echo "$state|$serial|Phone" ;; ' +
+            '  esac; ' +
+            'elif lsusb 2>/dev/null | grep -qiE "android|samsung|google|xiaomi|oneplus|motorola|oppo|vivo|realme|huawei"; then ' +
+            '  echo "plugged||USB Phone"; ' +
+            'else ' +
+            '  echo "none||No phone"; ' +
+            'fi'
+        ]
+
+        stdout: SplitParser {
+            onRead: data => {
+                var parts = data.trim().split("|")
+                var state = parts[0] || "none"
+
+                root.adbPhoneSerial = parts[1] || ""
+                root.adbPhoneText = parts[2] || "No phone"
+                root.adbPhoneConnected = state !== "none"
+                root.adbPhoneReady = state === "device"
+            }
+        }
+
+        Component.onCompleted: running = true
+    }
+
+    Process {
+        id: scrcpyLaunchProc
+
+        // Launch the same plain scrcpy command that works in your terminal.
+        // Do not gate this behind ADB state detection, because the detection can be stale
+        // even when scrcpy itself works perfectly. Keep it detached so QS does not parent it.
+        command: [
+            "sh",
+            "-c",
+            "setsid -f bash -lc 'scrcpy' >/tmp/qs-scrcpy.log 2>&1"
+        ]
+    }
+
+    Process {
         id: wifiListProc
         command: ["sh", "-c", "nmcli -t -f SSID,SIGNAL,SECURITY dev wifi list --rescan yes | awk -F: '$1 != \"\" {print}' | sort -t: -k2 -nr | paste -sd '|' -"]
 
@@ -477,6 +1140,192 @@ PanelWindow {
                     ? data.trim().split("|")
                     : []
             }
+        }
+    }
+
+
+    // =========================
+    // CALENDAR / GOOGLE DASHBOARD BACKEND
+    // =========================
+    Process {
+        id: calendarLoadSelectedProc
+
+        command: [
+            "sh",
+            "-c",
+            "cat ~/.cache/waylandar/selected_cals.json 2>/dev/null || echo ''"
+        ]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+
+            onStreamFinished: {
+                if (text.trim() !== "") {
+                    try {
+                        root.calendarSelectedCalendarIds = JSON.parse(text)
+                    } catch (e) {}
+                }
+            }
+        }
+
+        Component.onCompleted: running = true
+    }
+
+    Process {
+        id: calendarSaveSelectedProc
+
+        property string payload: ""
+
+        command: [
+            "sh",
+            "-c",
+            "mkdir -p ~/.cache/waylandar && printf '%s' \"$1\" > ~/.cache/waylandar/selected_cals.json",
+            "sh",
+            payload
+        ]
+    }
+
+    Timer {
+        id: calendarSaveDebounceTimer
+
+        interval: 100
+        repeat: false
+
+        onTriggered: {
+            if (calendarSaveSelectedProc.running)
+                calendarSaveDebounceTimer.restart()
+            else
+                calendarSaveSelectedProc.running = true
+        }
+    }
+
+    FileView {
+        id: calendarConfigWatcher
+
+        path: Quickshell.env("HOME") + "/.config/waylandar/config.json"
+
+        onTextChanged: {
+            let content = calendarConfigWatcher.text()
+
+            if (content.trim() !== "") {
+                try {
+                    let parsed = JSON.parse(content)
+
+                    if (parsed.active_provider)
+                        root.calendarProvider = parsed.active_provider
+                } catch (e) {}
+            }
+        }
+    }
+
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+
+        onTriggered: {
+            calendarConfigWatcher.reload()
+        }
+    }
+
+    Process {
+        id: calendarFetchProc
+
+        command: [
+            "sh",
+            "-c",
+            "if [ -f \"$HOME/.config/waylandar/backend/sync.py\" ]; then cd \"$HOME/.config/waylandar/backend\" && uv run python sync.py \"$1\" \"$2\" --background; " +
+            "elif [ -f backend/sync.py ]; then cd backend && uv run python sync.py \"$1\" \"$2\" --background; " +
+            "elif command -v waylandar-auth >/dev/null 2>&1; then waylandar-auth \"$1\" \"$2\" --background; " +
+            "else echo '{\"error\":\"Calendar backend not found. Install/run waylandar-auth first.\"}'; fi",
+            "waylandar-auth",
+            root.calendarCurrentViewYear.toString(),
+            (root.calendarCurrentViewMonth + 1).toString()
+        ]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+
+            onStreamFinished: {
+                try {
+                    let parsedData = JSON.parse(text)
+                    let parsedEvents = Array.isArray(parsedData)
+                        ? parsedData
+                        : (parsedData.events || [])
+
+                    let calendars = Array.isArray(parsedData)
+                        ? []
+                        : (parsedData.calendars || [])
+
+                    root.calendarAvailableCalendars = calendars
+
+                    if (Object.keys(root.calendarSelectedCalendarIds).length === 0) {
+                        let sel = {}
+
+                        for (let i = 0; i < calendars.length; i++) {
+                            if (calendars[i].selected)
+                                sel[calendars[i].id] = true
+                        }
+
+                        if (Object.keys(sel).length === 0) {
+                            for (let i = 0; i < calendars.length; i++)
+                                sel[calendars[i].id] = true
+                        }
+
+                        root.calendarSelectedCalendarIds = sel
+                    }
+
+                    if (parsedData.error) {
+                        root.calendarAuthError = parsedData.error
+                        root.calendarAllEvents = []
+                        root.calendarFetching = false
+                        return
+                    }
+
+                    root.calendarAuthError = ""
+
+                    let now = new Date()
+                    let todayStr = now.toDateString()
+                    let tomorrow = new Date(now)
+                    tomorrow.setDate(tomorrow.getDate() + 1)
+                    let tomorrowStr = tomorrow.toDateString()
+
+                    for (let i = 0; i < parsedEvents.length; i++) {
+                        parsedEvents[i].title = root.safeMediaText(parsedEvents[i].title || "Untitled event")
+                        parsedEvents[i].description = root.safeMediaText(parsedEvents[i].description || "")
+
+                        let d = root.calendarStartDate(parsedEvents[i])
+                        let dStr = d.toDateString()
+
+                        if (dStr === todayStr)
+                            parsedEvents[i].sectionTitle = "Today"
+                        else if (dStr === tomorrowStr)
+                            parsedEvents[i].sectionTitle = "Tomorrow"
+                        else
+                            parsedEvents[i].sectionTitle = d.toLocaleDateString(Qt.locale("en_US"), "dddd, MMM d")
+                    }
+
+                    root.calendarAllEvents = parsedEvents
+                    root.calendarFetching = false
+                } catch(e) {
+                    root.calendarAuthError = "Failed to parse calendar data."
+                    root.calendarAllEvents = []
+                    root.calendarFetching = false
+                    console.log("Failed to parse calendar JSON:", e)
+                }
+            }
+        }
+    }
+
+    Timer {
+        id: calendarAutoRefreshTimer
+
+        interval: 300000
+        running: true
+        repeat: true
+
+        onTriggered: {
+            root.calendarRefresh()
         }
     }
 
@@ -491,9 +1340,15 @@ PanelWindow {
             gpuProc.running = true
             powerProc.running = true
             displayProc.running = true
+            gameModeStatusProc.running = true
+            nightLightStatusProc.running = true
+            volumeReadProc.running = true
+            brightnessReadProc.running = true
             batteryProc.running = true
             wifiProc.running = true
             bluetoothProc.running = true
+            phoneDetectProc.running = true
+            kdeConnectDevicesProc.running = true
         }
     }
 
@@ -510,21 +1365,75 @@ PanelWindow {
     Rectangle {
         id: sideBg
 
+        HoverHandler {
+            id: sideBgHoverHandler
+
+            onHoveredChanged: {
+                root.barHovering = hovered
+            }
+        }
+
         anchors {
             left: parent.left
-            leftMargin: 8
+            leftMargin: root.barAutoHide ? 0 : 8
             verticalCenter: parent.verticalCenter
         }
 
-        width: root.activePanel !== "" ? 270 : 36
-        height: sideColumn.implicitHeight + 20
-        radius: 18
-        color: root.colBg
+        width: root.barCollapsed
+            ? 6
+            : root.activePanel === "calendar"
+                ? 930
+                : root.activePanel === "connectivity" || root.activePanel === "kdeconnect"
+                    ? 360
+                    : root.activePanel !== "" ? 270 : 36
+
+        // Closed pill should hug the icons. Expanded panels can use roomy dock spacing.
+        property int compactSpacing: 8
+        property int compactContentHeight: topStatusGroup.implicitHeight
+            + middleStatusGroup.implicitHeight
+            + bottomStatusGroup.implicitHeight
+            + (compactSpacing * 2)
+        property int closedPillHeight: compactContentHeight + 20
+        property int expandedPillHeight: Math.max(360, Math.min(root.height > 0 ? root.height - 80 : 680, 680))
+
+        // Keep Quick Settings the same height as the closed pill.
+        // Its button area scrolls instead of making the whole pill taller.
+        property int normalPanelHeight: root.activePanel === "connectivity"
+            ? closedPillHeight
+            : root.activePanel === "media"
+                ? closedPillHeight
+                : root.activePanel === "kdeconnect"
+                    ? 360
+                    : 430
+
+        height: root.barCollapsed
+            ? closedPillHeight
+            : root.activePanel === ""
+                ? closedPillHeight
+                : root.activePanel === "calendar"
+                    ? expandedPillHeight
+                    : normalPanelHeight
+        radius: root.barCollapsed ? 3 : 18
+        color: root.barCollapsed ? matugen.primaryContainer : root.colBg
         clip: true
-        border.width: 0.5
+        border.width: root.barCollapsed ? 0 : 0.5
         border.color: root.activePanel !== ""
                     ? root.colPrimaryAlpha
                     : root.colBorder
+
+        Behavior on color {
+            ColorAnimation {
+                duration: 160
+            }
+        }
+
+        Behavior on radius {
+            NumberAnimation {
+                duration: 160
+                easing.type: Easing.OutCubic
+            }
+        }
+
         Behavior on border.color {
             ColorAnimation {
                 duration: 160
@@ -537,8 +1446,25 @@ PanelWindow {
             }
         }
 
+        Behavior on height {
+            NumberAnimation {
+                duration: 250
+                easing.type: Easing.OutCubic
+            }
+        }
+
         Row {
             id: mainRow
+
+            opacity: root.barCollapsed ? 0 : 1
+            enabled: !root.barCollapsed
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 110
+                    easing.type: Easing.OutCubic
+                }
+            }
 
             anchors {
                 left: parent.left
@@ -548,13 +1474,20 @@ PanelWindow {
 
             spacing: root.activePanel !== "" ? 16 : 0
 
-            Column {
+            Item {
                 id: sideColumn
                 width: 20
-                spacing: 5
-                
+                height: sideBg.height - 20
 
-               Rectangle {
+                Column {
+                    id: topStatusGroup
+                    width: parent.width
+                    spacing: 5
+                    y: 0
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+
+Rectangle {
                     id: powerButton
 
                     property bool hovered: powerMouse.containsMouse
@@ -610,7 +1543,7 @@ PanelWindow {
                     }
                 }
 
-               Repeater {
+Repeater {
                     model: 3
 
                     Rectangle {
@@ -673,10 +1606,40 @@ PanelWindow {
                         }
                     }
                 }
+                }
 
-                Item { width: 1; height: 1 }
+                Column {
+                    id: middleStatusGroup
+                    width: parent.width
+                    spacing: 5
 
-                Text {
+                    // Keep media/clock visually centered when there is room,
+                    // but never let it overlap the workspace stack or bottom status group.
+                    property int safeTopY: topStatusGroup.implicitHeight + sideBg.compactSpacing
+                    property int safeBottomY: parent.height
+                        - bottomStatusGroup.implicitHeight
+                        - sideBg.compactSpacing
+                        - implicitHeight
+                    property int centeredY: Math.round((parent.height - implicitHeight) / 2)
+
+                    y: root.activePanel !== ""
+                        ? Math.max(
+                            safeTopY,
+                            Math.min(centeredY, Math.max(safeTopY, safeBottomY))
+                        )
+                        : safeTopY
+
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    Behavior on y {
+                        NumberAnimation {
+                            duration: 70
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+
+
+Text {
                     id: media
 
                     property bool active: root.activePanel === "media"
@@ -714,16 +1677,11 @@ PanelWindow {
                     }
                 }
 
-                // Item { width: 1; height: 1 }
-
-
-                // =========================
-                // ROTATING INFO / CLOCK PILL
-                // =========================
-                Rectangle {
+Rectangle {
                     id: rotatingInfoPill
 
                     property bool hovered: rotatingInfoMouse.containsMouse
+                    property bool active: root.activePanel === "calendar"
 
                     anchors.horizontalCenter: parent.horizontalCenter
 
@@ -731,12 +1689,12 @@ PanelWindow {
                     height: 44
                     radius: 9
 
-                    color: hovered
+                    color: active || hovered
                         ? matugen.primaryContainer
                         : "transparent"
 
-                    border.width: hovered ? 0.5 : 0
-                    border.color: hovered
+                    border.width: active ? 1 : hovered ? 0.5 : 0
+                    border.color: active || hovered
                         ? root.colPrimaryAlpha
                         : "transparent"
 
@@ -910,17 +1868,51 @@ PanelWindow {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-                        onClicked: {
-                            if (!infoFlipAnim.running)
-                                infoFlipAnim.start()
+                        onClicked: mouse => {
+                            if (mouse.button === Qt.RightButton) {
+                                if (root.activePanel === "calendar") {
+                                    root.activePanel = ""
+                                } else {
+                                    root.activePanel = "calendar"
+
+                                    if (root.calendarAllEvents.length === 0)
+                                        root.calendarRefresh()
+                                }
+                            } else {
+                                if (!infoFlipAnim.running)
+                                    infoFlipAnim.start()
+                            }
                         }
                     }
                 }
-                Rectangle {
+                }
+
+                Column {
+                    id: bottomStatusGroup
+                    width: parent.width
+                    spacing: 5
+                    y: root.activePanel !== ""
+                        ? Math.max(0, parent.height - implicitHeight)
+                        : topStatusGroup.implicitHeight
+                            + sideBg.compactSpacing
+                            + middleStatusGroup.implicitHeight
+                            + sideBg.compactSpacing
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    Behavior on y {
+                        NumberAnimation {
+                            duration: 10
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+
+
+Rectangle {
                     id: quickStatusGroup
 
-                    property bool active: root.activePanel === "connectivity" || root.activePanel === "wifiList" || root.activePanel === "battery" || root.activePanel === "display"
+                    property bool active: root.activePanel === "connectivity" || root.activePanel === "wifiList" || root.activePanel === "battery" || root.activePanel === "display" || root.activePanel === "kdeconnect"
                     property bool hovered: quickStatusMouse.containsMouse
 
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -1036,12 +2028,816 @@ PanelWindow {
                         onClicked: root.activePanel = root.activePanel === "connectivity" ? "" : "connectivity"
                     }
                 }
+                }
             }
+
+
+            Rectangle {
+                id: calendarPanel
+
+                width: root.activePanel === "calendar" ? 850 : 0
+                height: root.activePanel === "calendar" ? sideBg.height - 20 : 0
+                opacity: root.activePanel === "calendar" ? 1 : 0
+
+                clip: true
+                radius: 18
+
+                color: matugen.surfaceContainer
+                border.width: 1
+                border.color: root.colBorder
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 180
+                    }
+                }
+
+                Behavior on width {
+                    NumberAnimation {
+                        duration: 250
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                Row {
+                    anchors.fill: parent
+                    anchors.margins: 16
+                    spacing: 16
+
+                    // Calendar source selector
+                    Rectangle {
+                        width: 150
+                        height: parent.height
+                        radius: 16
+
+                        color: matugen.surfaceContainerLow
+                        border.width: 0.5
+                        border.color: root.colBorder
+
+                        Column {
+                            anchors.fill: parent
+                            anchors.margins: 14
+                            spacing: 12
+
+                            Text {
+                                text: "Calendars"
+                                color: root.colFg
+                                font.family: root.fontFamily
+                                font.pixelSize: 15
+                                font.bold: true
+                            }
+
+                            Rectangle {
+                                width: parent.width
+                                height: 24
+                                radius: 12
+
+                                color: root.colPrimaryContainer
+
+                                Row {
+                                    anchors.centerIn: parent
+                                    spacing: 6
+
+                                    Text {
+                                        text: root.calendarProvider === "nextcloud" ? "☁" : "G"
+                                        color: root.colBg
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 11
+                                        font.bold: true
+                                    }
+
+                                    Text {
+                                        text: root.calendarProvider === "nextcloud" ? "Nextcloud" : "Google"
+                                        color: root.colBg
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 10
+                                        font.bold: true
+                                    }
+                                }
+                            }
+
+                            ListView {
+                                width: parent.width
+                                height: parent.height - 72
+                                model: root.calendarAvailableCalendars
+                                spacing: 8
+                                clip: true
+
+                                opacity: root.calendarFetching ? 0.35 : 1.0
+
+                                Behavior on opacity {
+                                    NumberAnimation {
+                                        duration: 200
+                                    }
+                                }
+
+                                delegate: Item {
+                                    width: ListView.view.width
+                                    height: 28
+
+                                    Rectangle {
+                                        id: calendarCheckbox
+
+                                        width: 17
+                                        height: 17
+                                        radius: 5
+
+                                        anchors.left: parent.left
+                                        anchors.verticalCenter: parent.verticalCenter
+
+                                        color: root.calendarSelectedCalendarIds[modelData.id]
+                                            ? (modelData.color || root.colBlue)
+                                            : "transparent"
+
+                                        border.width: 1.5
+                                        border.color: modelData.color || root.colBlue
+
+                                        Text {
+                                            anchors.centerIn: parent
+
+                                            text: "✓"
+                                            color: root.colBg
+                                            visible: root.calendarSelectedCalendarIds[modelData.id] === true
+
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 10
+                                            font.bold: true
+                                        }
+                                    }
+
+                                    Text {
+                                        anchors.left: calendarCheckbox.right
+                                        anchors.leftMargin: 9
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+
+                                        text: modelData.name || "Calendar"
+                                        color: root.colFg
+
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 10
+                                        elide: Text.ElideRight
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+
+                                        onClicked: {
+                                            root.calendarToggleCalendar(modelData.id)
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    anchors.centerIn: parent
+
+                                    visible: root.calendarAvailableCalendars.length === 0
+                                        && !root.calendarFetching
+
+                                    text: "No calendars"
+                                    color: root.colMuted
+
+                                    font.family: root.fontFamily
+                                    font.pixelSize: 10
+                                }
+                            }
+                        }
+
+                        // Small loading spinner
+                        Rectangle {
+                            anchors.centerIn: parent
+
+                            width: 28
+                            height: 28
+                            radius: 14
+
+                            color: "transparent"
+                            border.width: 3
+                            border.color: root.colBlue
+
+                            visible: opacity > 0
+                            opacity: root.calendarFetching ? 1 : 0
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: 200
+                                }
+                            }
+
+                            Rectangle {
+                                anchors.top: parent.top
+                                anchors.right: parent.right
+
+                                width: 14
+                                height: 14
+                                color: matugen.surfaceContainerLow
+                            }
+
+                            RotationAnimation on rotation {
+                                loops: Animation.Infinite
+                                from: 0
+                                to: 360
+                                duration: 800
+                                running: root.calendarFetching
+                            }
+                        }
+                    }
+
+                    // Month grid
+                    Rectangle {
+                        width: 395
+                        height: parent.height
+                        radius: 16
+
+                        color: matugen.surfaceContainerLow
+                        border.width: 0.5
+                        border.color: root.colBorder
+
+                        Column {
+                            anchors.fill: parent
+                            anchors.margins: 14
+                            spacing: 12
+
+                            Row {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: 16
+
+                                Rectangle {
+                                    width: 28
+                                    height: 28
+                                    radius: 14
+
+                                    color: calendarPrevMouse.containsMouse
+                                        ? matugen.surfaceContainerHigh
+                                        : "transparent"
+
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: 160
+                                        }
+                                    }
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "‹"
+                                        color: root.colBlue
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 18
+                                        font.bold: true
+                                    }
+
+                                    MouseArea {
+                                        id: calendarPrevMouse
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+
+                                        onClicked: root.calendarPreviousMonth()
+                                    }
+                                }
+
+                                Text {
+                                    width: 250
+
+                                    text: root.calendarCurrentMonthStr
+                                    color: root.colFg
+
+                                    font.family: root.fontFamily
+                                    font.pixelSize: 19
+                                    font.bold: true
+                                    horizontalAlignment: Text.AlignHCenter
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                Rectangle {
+                                    width: 28
+                                    height: 28
+                                    radius: 14
+
+                                    color: calendarNextMouse.containsMouse
+                                        ? matugen.surfaceContainerHigh
+                                        : "transparent"
+
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: 160
+                                        }
+                                    }
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "›"
+                                        color: root.colBlue
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 18
+                                        font.bold: true
+                                    }
+
+                                    MouseArea {
+                                        id: calendarNextMouse
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+
+                                        onClicked: root.calendarNextMonth()
+                                    }
+                                }
+                            }
+
+                            Row {
+                                width: parent.width
+                                spacing: 0
+
+                                Repeater {
+                                    model: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+                                    Text {
+                                        width: parent.width / 7
+
+                                        text: modelData
+                                        color: root.colBlue
+
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 10
+                                        font.bold: true
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+                                }
+                            }
+
+                            GridView {
+                                id: calendarGrid
+
+                                width: parent.width
+                                height: parent.height - 70
+
+                                cellWidth: width / 7
+                                cellHeight: height / 6
+
+                                model: root.calendarMonthDays
+                                interactive: false
+                                clip: true
+
+                                opacity: root.calendarFetching ? 0.35 : 1
+
+                                Behavior on opacity {
+                                    NumberAnimation {
+                                        duration: 200
+                                    }
+                                }
+
+                                delegate: Rectangle {
+                                    width: calendarGrid.cellWidth - 6
+                                    height: calendarGrid.cellHeight - 6
+                                    radius: 10
+
+                                    property bool selected: root.calendarSelectedDateStr === modelData.dateStr
+                                    property bool today: modelData.dateStr === new Date().toDateString()
+                                    property bool hasEvents: root.calendarActiveEventDays[modelData.dateStr] === true
+
+                                    color: selected
+                                        ? root.colPrimaryContainer
+                                        : calendarDayMouse.containsMouse
+                                            ? matugen.surfaceContainerHigh
+                                            : modelData.isCurrentMonth
+                                                ? matugen.surfaceContainer
+                                                : matugen.surfaceContainerLow
+
+                                    border.width: today ? 1 : 0
+                                    border.color: today ? root.colPrimaryAlpha : "transparent"
+
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: 140
+                                        }
+                                    }
+
+                                    Text {
+                                        anchors.centerIn: parent
+
+                                        text: modelData.dayNum
+                                        color: modelData.isCurrentMonth ? root.colFg : root.colMuted
+
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 12
+                                        font.bold: today || selected
+                                    }
+
+                                    Rectangle {
+                                        width: 5
+                                        height: 5
+                                        radius: 3
+
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        anchors.bottom: parent.bottom
+                                        anchors.bottomMargin: 6
+
+                                        color: root.colBlue
+                                        visible: hasEvents
+                                    }
+
+                                    MouseArea {
+                                        id: calendarDayMouse
+
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+
+                                        onClicked: {
+                                            if (root.calendarSelectedDateStr === modelData.dateStr)
+                                                root.calendarSelectedDateStr = ""
+                                            else
+                                                root.calendarSelectedDateStr = modelData.dateStr
+
+                                            root.calendarExpandedEventIndex = -1
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            anchors.centerIn: parent
+
+                            width: 28
+                            height: 28
+                            radius: 14
+
+                            color: "transparent"
+                            border.width: 3
+                            border.color: root.colBlue
+
+                            visible: opacity > 0
+                            opacity: root.calendarFetching ? 1 : 0
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: 200
+                                }
+                            }
+
+                            Rectangle {
+                                anchors.top: parent.top
+                                anchors.right: parent.right
+
+                                width: 14
+                                height: 14
+                                color: matugen.surfaceContainerLow
+                            }
+
+                            RotationAnimation on rotation {
+                                loops: Animation.Infinite
+                                from: 0
+                                to: 360
+                                duration: 800
+                                running: root.calendarFetching
+                            }
+                        }
+                    }
+
+                    // Agenda list
+                    Rectangle {
+                        width: parent.width - 150 - 395 - 32
+                        height: parent.height
+                        radius: 16
+
+                        color: matugen.surfaceContainerLow
+                        border.width: 0.5
+                        border.color: root.colBorder
+
+                        Column {
+                            anchors.fill: parent
+                            anchors.margins: 14
+                            spacing: 10
+
+                            Row {
+                                width: parent.width
+                                spacing: 8
+
+                                Text {
+                                    width: parent.width - 34
+                                    text: root.calendarSelectedTitle()
+                                    color: root.colFg
+
+                                    font.family: root.fontFamily
+                                    font.pixelSize: 15
+                                    font.bold: true
+                                    elide: Text.ElideRight
+                                }
+
+                                Rectangle {
+                                    width: 26
+                                    height: 26
+                                    radius: 13
+
+                                    color: calendarRefreshMouse.containsMouse
+                                        ? matugen.surfaceContainerHigh
+                                        : "transparent"
+
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: 160
+                                        }
+                                    }
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "󰑓"
+                                        color: root.colBlue
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 13
+                                        renderType: Text.NativeRendering
+                                    }
+
+                                    MouseArea {
+                                        id: calendarRefreshMouse
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+
+                                        onClicked: root.calendarRefresh()
+                                    }
+                                }
+                            }
+
+                            ListView {
+                                id: calendarAgendaList
+
+                                width: parent.width
+                                height: parent.height - 35
+
+                                model: root.calendarDisplayedEvents
+                                spacing: 8
+                                clip: true
+
+                                opacity: root.calendarFetching ? 0.35 : 1
+
+                                Behavior on opacity {
+                                    NumberAnimation {
+                                        duration: 200
+                                    }
+                                }
+
+                                delegate: Rectangle {
+                                    width: ListView.view.width
+                                    height: root.calendarExpandedEventIndex === index
+                                        ? Math.max(92, calendarEventDetails.implicitHeight + 68)
+                                        : 58
+
+                                    radius: 12
+                                    clip: true
+
+                                    property bool expanded: root.calendarExpandedEventIndex === index
+                                    property bool hovered: calendarEventMouse.containsMouse
+
+                                    color: hovered
+                                        ? matugen.surfaceContainerHigh
+                                        : matugen.surfaceContainer
+
+                                    border.width: 0.5
+                                    border.color: root.colBorder
+
+                                    Behavior on height {
+                                        NumberAnimation {
+                                            duration: 200
+                                            easing.type: Easing.OutCubic
+                                        }
+                                    }
+
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: 150
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        width: 4
+                                        height: 34
+                                        radius: 2
+
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 10
+                                        anchors.top: parent.top
+                                        anchors.topMargin: 12
+
+                                        color: modelData.calendar_color || root.colBlue
+                                    }
+
+                                    Column {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 22
+                                        anchors.right: parent.right
+                                        anchors.rightMargin: 10
+                                        anchors.top: parent.top
+                                        anchors.topMargin: 9
+                                        spacing: 3
+
+                                        Text {
+                                            width: parent.width
+
+                                            text: modelData.title || "Untitled event"
+                                            color: root.colFg
+
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 11
+                                            font.bold: true
+                                            elide: Text.ElideRight
+                                            maximumLineCount: 1
+                                        }
+
+                                        Text {
+                                            width: parent.width
+
+                                            text: root.calendarEventTimeText(modelData)
+                                            color: root.colMuted
+
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 9
+                                            elide: Text.ElideRight
+                                            maximumLineCount: 1
+                                        }
+
+                                        Column {
+                                            id: calendarEventDetails
+
+                                            width: parent.width
+                                            spacing: 7
+                                            visible: expanded
+                                            opacity: expanded ? 1 : 0
+
+                                            Behavior on opacity {
+                                                NumberAnimation {
+                                                    duration: 150
+                                                }
+                                            }
+
+                                            Text {
+                                                width: parent.width
+
+                                                text: modelData.description && modelData.description.length > 0
+                                                    ? modelData.description
+                                                    : "No additional description."
+
+                                                color: root.colMuted
+
+                                                font.family: root.fontFamily
+                                                font.pixelSize: 9
+                                                wrapMode: Text.WordWrap
+                                                maximumLineCount: 4
+                                            }
+
+                                            Rectangle {
+                                                width: 105
+                                                height: 26
+                                                radius: 8
+
+                                                visible: modelData.link && modelData.link.length > 0
+
+                                                color: openEventMouse.containsMouse
+                                                    ? root.colPrimaryContainer
+                                                    : matugen.surfaceContainerHigh
+
+                                                Behavior on color {
+                                                    ColorAnimation {
+                                                        duration: 150
+                                                    }
+                                                }
+
+                                                Text {
+                                                    anchors.centerIn: parent
+
+                                                    text: "Open event"
+                                                    color: root.colFg
+
+                                                    font.family: root.fontFamily
+                                                    font.pixelSize: 9
+                                                    font.bold: true
+                                                }
+
+                                                MouseArea {
+                                                    id: openEventMouse
+
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                    cursorShape: Qt.PointingHandCursor
+
+                                                    onClicked: {
+                                                        Qt.openUrlExternally(modelData.link)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        id: calendarEventMouse
+
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        anchors.top: parent.top
+                                        height: 58
+
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        acceptedButtons: Qt.LeftButton
+
+                                        onClicked: {
+                                            if (root.calendarExpandedEventIndex === index)
+                                                root.calendarExpandedEventIndex = -1
+                                            else
+                                                root.calendarExpandedEventIndex = index
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    anchors.centerIn: parent
+
+                                    visible: root.calendarDisplayedEvents.length === 0
+                                        && root.calendarAuthError === ""
+                                        && !root.calendarFetching
+
+                                    text: "Your schedule is clear."
+                                    color: root.colMuted
+
+                                    font.family: root.fontFamily
+                                    font.pixelSize: 11
+                                    font.italic: true
+                                }
+
+                                Flickable {
+                                    anchors.fill: parent
+                                    anchors.margins: 8
+                                    visible: root.calendarAuthError !== ""
+                                    clip: true
+
+                                    contentWidth: width
+                                    contentHeight: calendarErrorText.implicitHeight
+
+                                    Text {
+                                        id: calendarErrorText
+
+                                        width: parent.width
+                                        text: root.calendarAuthError
+                                        color: root.colFg
+
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 10
+                                        wrapMode: Text.WrapAnywhere
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            anchors.centerIn: parent
+
+                            width: 28
+                            height: 28
+                            radius: 14
+
+                            color: "transparent"
+                            border.width: 3
+                            border.color: root.colBlue
+
+                            visible: opacity > 0
+                            opacity: root.calendarFetching ? 1 : 0
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: 200
+                                }
+                            }
+
+                            Rectangle {
+                                anchors.top: parent.top
+                                anchors.right: parent.right
+
+                                width: 14
+                                height: 14
+                                color: matugen.surfaceContainerLow
+                            }
+
+                            RotationAnimation on rotation {
+                                loops: Animation.Infinite
+                                from: 0
+                                to: 360
+                                duration: 800
+                                running: root.calendarFetching
+                            }
+                        }
+                    }
+                }
+            }
+
 
             Column {
                 id: batteryPanel
                 width: root.activePanel === "battery" ? 210 : 0
-                height: root.activePanel === "battery" ? sideColumn.implicitHeight : 0
+                height: root.activePanel === "battery" ? sideColumn.height : 0
                 opacity: root.activePanel === "battery" ? 1 : 0
                 clip: true
                 spacing: 12
@@ -1102,437 +2898,1444 @@ PanelWindow {
 
             Column {
                 id: connectivityPanel
-                width: root.activePanel === "connectivity" ? 210 : 0
-                height: root.activePanel === "connectivity" ? sideColumn.implicitHeight : 0
+                width: root.activePanel === "connectivity" ? 300 : 0
+                height: root.activePanel === "connectivity" ? sideColumn.height : 0
                 opacity: root.activePanel === "connectivity" ? 1 : 0
+                clip: true
+                spacing: 8
+
+                Row {
+                    width: parent.width
+                    height: 28
+                    spacing: 8
+
+                    Text {
+                        width: parent.width - 36
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        text: "Quick Settings"
+                        color: root.colBlue
+                        font.family: root.fontFamily
+                        font.pixelSize: 16
+                        font.bold: true
+                        elide: Text.ElideRight
+                    }
+
+                    Rectangle {
+                        id: connectivityPinButton
+
+                        property bool hovered: connectivityPinMouse.containsMouse
+                        property bool pinned: !root.barAutoHide
+
+                        width: 28
+                        height: 28
+                        radius: 14
+
+                        color: hovered || pinned
+                            ? matugen.surfaceContainerHigh
+                            : "transparent"
+
+                        border.width: hovered ? 0.5 : 0
+                        border.color: hovered ? root.colPrimaryAlpha : "transparent"
+
+                        Behavior on color {
+                            ColorAnimation { duration: 160 }
+                        }
+
+                        Behavior on border.color {
+                            ColorAnimation { duration: 160 }
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+
+                            text: "󰐃"
+                            color: connectivityPinButton.pinned ? root.colBlue : root.colMuted
+                            opacity: connectivityPinButton.pinned ? 1.0 : 0.65
+
+                            font.family: root.fontFamily
+                            font.pixelSize: 14
+                            font.bold: true
+                            renderType: Text.NativeRendering
+
+                            Behavior on color {
+                                ColorAnimation { duration: 160 }
+                            }
+
+                            Behavior on opacity {
+                                NumberAnimation { duration: 160 }
+                            }
+                        }
+
+                        MouseArea {
+                            id: connectivityPinMouse
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+
+                            onClicked: {
+                                var autoHideEnabled = !root.barAutoHide
+
+                                root.barAutoHide = autoHideEnabled
+
+                                barAutoHideSaveProc.running = false
+                                barAutoHideSaveProc.state = autoHideEnabled ? "on" : "off"
+                                barAutoHideSaveProc.running = true
+
+                                if (autoHideEnabled)
+                                    root.activePanel = ""
+                            }
+                        }
+                    }
+                }
+
+                Row {
+                    id: connectivityBodyRow
+                    width: parent.width
+                    height: Math.max(0, parent.height - 28 - connectivityPanel.spacing)
+                    spacing: 10
+
+                    Flickable {
+                        id: quickSettingsButtonsFlick
+                        width: 210
+                        height: parent.height
+                        clip: true
+                        interactive: true
+                        boundsBehavior: Flickable.StopAtBounds
+                        contentWidth: width
+                        contentHeight: Math.max(height, quickSettingsButtonGrid.implicitHeight)
+
+                        // Mouse-wheel scrolling on desktop. Child MouseAreas can make
+                        // plain Flickable scrolling feel dead, so handle the wheel here.
+                        WheelHandler {
+                            target: null
+
+                            onWheel: event => {
+                                var maxY = Math.max(0, quickSettingsButtonsFlick.contentHeight - quickSettingsButtonsFlick.height)
+                                quickSettingsButtonsFlick.contentY = Math.max(
+                                    0,
+                                    Math.min(maxY, quickSettingsButtonsFlick.contentY - event.angleDelta.y / 2)
+                                )
+                                event.accepted = true
+                            }
+                        }
+
+                        Column {
+                            id: quickSettingsButtonGrid
+                            width: quickSettingsButtonsFlick.width
+                            spacing: 8
+
+                        Row {
+                            spacing: 10
+
+                            Rectangle {
+                                id: connectivityBatteryCard
+
+                                property bool active: root.activePanel === "battery"
+                                property bool hovered: connectivityBatteryMouse.containsMouse
+
+                                width: 90
+                                height: 132
+                                radius: 16
+
+                                color: root.cardBg(active, hovered)
+                                border.width: root.cardBorderWidth(active, hovered)
+                                border.color: root.cardBorder(active, hovered)
+
+                                Behavior on color { ColorAnimation { duration: 160 } }
+                                Behavior on border.color { ColorAnimation { duration: 160 } }
+
+                                Item {
+                                    anchors.fill: parent
+                                    anchors.margins: 10
+
+                                    Rectangle {
+                                        id: qsBatteryOutline
+                                        anchors.bottom: parent.bottom
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        width: parent.width - 8
+                                        height: parent.height - 10
+                                        radius: 8
+                                        color: "transparent"
+                                        border.width: 2
+                                        border.color: root.batteryCharging ? "#50fa7b" : root.batteryPercent <= 20 ? "#ff5555" : root.colFg
+                                    }
+
+                                    Rectangle {
+                                        anchors.horizontalCenter: qsBatteryOutline.horizontalCenter
+                                        anchors.bottom: qsBatteryOutline.top
+                                        anchors.bottomMargin: -2
+                                        width: 12
+                                        height: 5
+                                        radius: 2
+                                        color: qsBatteryOutline.border.color
+                                    }
+
+                                    Rectangle {
+                                        id: qsBatteryFill
+                                        property real chargeAnim: 0.05
+                                        anchors.bottom: qsBatteryOutline.bottom
+                                        anchors.bottomMargin: 4
+                                        anchors.horizontalCenter: qsBatteryOutline.horizontalCenter
+                                        width: qsBatteryOutline.width - 8
+                                        height: Math.max(6, (qsBatteryOutline.height - 8) * (root.batteryCharging ? chargeAnim : root.batteryPercent / 100))
+                                        radius: 4
+                                        color: root.batteryCharging ? "#50fa7b" : root.batteryPercent > 40 ? "#50fa7b" : root.batteryPercent > 15 ? "#ffb86c" : "#ff5555"
+
+                                        NumberAnimation on chargeAnim {
+                                            running: root.batteryCharging
+                                            loops: Animation.Infinite
+                                            from: Math.max(0.05, root.batteryPercent / 100)
+                                            to: 1.0
+                                            duration: 1200
+                                            easing.type: Easing.InOutCubic
+                                        }
+
+                                        Behavior on height {
+                                            enabled: !root.batteryCharging
+                                            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                                        }
+
+                                        Behavior on color {
+                                            ColorAnimation { duration: 250 }
+                                        }
+                                    }
+
+                                    Text {
+                                        z: 10
+                                        anchors.horizontalCenter: qsBatteryFill.horizontalCenter
+                                        y: qsBatteryFill.y + (qsBatteryFill.height / 2) - (height / 2)
+                                        text: root.batteryPercent + ""
+                                        color: root.batteryPercent > 40 ? root.colBg : "#000000"
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 11
+                                        font.bold: true
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: connectivityBatteryMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.activePanel = "battery"
+                                }
+                            }
+
+                            Column {
+                                spacing: 8
+
+                                Rectangle {
+                                    id: connectivityWifiCard
+
+                                    property bool active: root.activePanel === "wifiList"
+                                    property bool hovered: connectivityWifiMouse.containsMouse
+
+                                    width: 110
+                                    height: 62
+                                    radius: 16
+
+                                    color: root.cardBg(active, hovered)
+                                    border.width: root.cardBorderWidth(active, hovered)
+                                    border.color: root.cardBorder(active, hovered)
+
+                                    Behavior on color { ColorAnimation { duration: 160 } }
+                                    Behavior on border.color { ColorAnimation { duration: 160 } }
+
+                                    Column {
+                                        anchors.fill: parent
+                                        anchors.margins: 10
+                                        spacing: 4
+
+                                        Text {
+                                            text: "WiFi"
+                                            color: root.colFg
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 13
+                                            font.bold: true
+                                        }
+
+                                        Text {
+                                            width: parent.width
+                                            text: root.wifiConnected ? root.wifiSsid : "Disconnected"
+                                            color: root.wifiConnected ? root.colBlue : root.colMuted
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 10
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        id: connectivityWifiMouse
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+
+                                        onClicked: {
+                                            wifiListProc.running = true
+                                            root.activePanel = "wifiList"
+                                        }
+                                    }
+                                }
+
+                                Rectangle {
+                                    id: connectivityBluetoothCard
+
+                                    property bool active: false
+                                    property bool hovered: connectivityBluetoothMouse.containsMouse
+
+                                    width: 110
+                                    height: 62
+                                    radius: 16
+
+                                    color: root.cardBg(false, hovered)
+                                    border.width: root.cardBorderWidth(false, hovered)
+                                    border.color: root.cardBorder(false, hovered)
+
+                                    Behavior on color { ColorAnimation { duration: 160 } }
+                                    Behavior on border.color { ColorAnimation { duration: 160 } }
+
+                                    Column {
+                                        anchors.fill: parent
+                                        anchors.margins: 10
+                                        spacing: 4
+
+                                        Text {
+                                            text: "Bluetooth"
+                                            color: root.colFg
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 13
+                                            font.bold: true
+                                        }
+
+                                        Text {
+                                            text: root.bluetoothText
+                                            color: root.bluetoothPowered ? root.colBlue : root.colMuted
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 10
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        id: connectivityBluetoothMouse
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+
+                                        onClicked: {
+                                            bluetoothManagerProc.running = false
+                                            bluetoothManagerProc.running = true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Row {
+                            spacing: 10
+
+                            Rectangle {
+                                id: connectivityPowerCard
+
+                                property bool active: root.powerMode.toLowerCase().indexOf("performance") >= 0
+                                property bool hovered: connectivityPowerMouse.containsMouse
+
+                                width: 100
+                                height: 42
+                                radius: 14
+
+                                color: root.cardBg(active, hovered)
+                                border.width: root.cardBorderWidth(active, hovered)
+                                border.color: root.cardBorder(active, hovered)
+
+                                Behavior on color { ColorAnimation { duration: 160 } }
+                                Behavior on border.color { ColorAnimation { duration: 160 } }
+
+                                Row {
+                                    anchors.fill: parent
+                                    anchors.margins: 9
+                                    spacing: 8
+
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: root.powerIcon
+                                        color: root.powerColor
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 15
+                                        font.bold: true
+                                        renderType: Text.NativeRendering
+                                    }
+
+                                    Column {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: 58
+                                        spacing: 1
+
+                                        Text {
+                                            width: parent.width
+                                            text: "Power"
+                                            color: root.colFg
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 10
+                                            font.bold: true
+                                            elide: Text.ElideRight
+                                        }
+
+                                        Text {
+                                            width: parent.width
+                                            text: root.powerMode
+                                            color: root.colMuted
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 8
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: connectivityPowerMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+
+                                    onClicked: {
+                                        powerToggleProc.running = false
+                                        powerToggleProc.running = true
+                                        powerRefreshDelay.restart()
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                id: connectivityDisplayCard
+
+                                property bool active: root.displayGameMode
+                                property bool hovered: connectivityDisplayMouse.containsMouse
+
+                                width: 100
+                                height: 42
+                                radius: 14
+
+                                color: root.cardBg(active, hovered)
+                                border.width: root.cardBorderWidth(active, hovered)
+                                border.color: root.cardBorder(active, hovered)
+
+                                Behavior on color { ColorAnimation { duration: 160 } }
+                                Behavior on border.color { ColorAnimation { duration: 160 } }
+
+                                Row {
+                                    anchors.fill: parent
+                                    anchors.margins: 9
+                                    spacing: 8
+
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: root.displayGameMode ? "󰍹" : "󰍺"
+                                        color: root.displayGameMode ? root.colBlue : root.colFg
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 15
+                                        font.bold: true
+                                        renderType: Text.NativeRendering
+                                    }
+
+                                    Column {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: 58
+                                        spacing: 1
+
+                                        Text {
+                                            width: parent.width
+                                            text: "Display"
+                                            color: root.colFg
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 10
+                                            font.bold: true
+                                            elide: Text.ElideRight
+                                        }
+
+                                        Text {
+                                            width: parent.width
+                                            text: root.displayText
+                                            color: root.colMuted
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 8
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: connectivityDisplayMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+
+                                    onClicked: {
+                                        displayProc.running = false
+                                        displayProc.running = true
+                                        root.activePanel = "display"
+                                    }
+                                }
+                            }
+                        }
+
+                        Row {
+                            spacing: 10
+
+                            Rectangle {
+                                id: connectivityGameModeCard
+
+                                property bool active: root.gameModeActive
+                                property bool hovered: connectivityGameModeMouse.containsMouse
+
+                                width: 100
+                                height: 42
+                                radius: 14
+
+                                color: root.cardBg(active, hovered)
+                                border.width: root.cardBorderWidth(active, hovered)
+                                border.color: root.cardBorder(active, hovered)
+
+                                Behavior on color { ColorAnimation { duration: 160 } }
+                                Behavior on border.color { ColorAnimation { duration: 160 } }
+
+                                Row {
+                                    anchors.fill: parent
+                                    anchors.margins: 9
+                                    spacing: 8
+
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: ""
+                                        color: root.gameModeActive ? root.colBlue : root.colFg
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 15
+                                        font.bold: true
+                                        renderType: Text.NativeRendering
+                                    }
+
+                                    Column {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: 58
+                                        spacing: 1
+
+                                        Text {
+                                            width: parent.width
+                                            text: "Game"
+                                            color: root.colFg
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 10
+                                            font.bold: true
+                                            elide: Text.ElideRight
+                                        }
+
+                                        Text {
+                                            width: parent.width
+                                            text: root.gameModeActive ? "On" : "Off"
+                                            color: root.colMuted
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 8
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: connectivityGameModeMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+
+                                    onClicked: {
+                                        gameModeToggleProc.running = false
+                                        gameModeToggleProc.running = true
+                                        root.gameModeActive = !root.gameModeActive
+                                        gameModeRefreshDelay.restart()
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                id: connectivityNightLightCard
+
+                                property bool active: root.nightLightActive
+                                property bool hovered: connectivityNightLightMouse.containsMouse
+
+                                width: 100
+                                height: 42
+                                radius: 14
+
+                                color: root.cardBg(active, hovered)
+                                border.width: root.cardBorderWidth(active, hovered)
+                                border.color: root.cardBorder(active, hovered)
+
+                                Behavior on color { ColorAnimation { duration: 160 } }
+                                Behavior on border.color { ColorAnimation { duration: 160 } }
+
+                                Row {
+                                    anchors.fill: parent
+                                    anchors.margins: 9
+                                    spacing: 8
+
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "󰖔"
+                                        color: root.nightLightActive ? root.colBlue : root.colFg
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 15
+                                        font.bold: true
+                                        renderType: Text.NativeRendering
+                                    }
+
+                                    Column {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: 58
+                                        spacing: 1
+
+                                        Text {
+                                            width: parent.width
+                                            text: "Night"
+                                            color: root.colFg
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 10
+                                            font.bold: true
+                                            elide: Text.ElideRight
+                                        }
+
+                                        Text {
+                                            width: parent.width
+                                            text: root.nightLightActive ? "4000K" : "Off"
+                                            color: root.colMuted
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 8
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: connectivityNightLightMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+
+                                    onClicked: {
+                                        nightLightToggleProc.running = false
+                                        nightLightToggleProc.running = true
+                                        root.nightLightActive = !root.nightLightActive
+                                        nightLightRefreshDelay.restart()
+                                    }
+                                }
+                            }
+                        }
+
+Row {
+                            id: phoneToolsRow
+
+                            visible: root.kdeConnectAvailable || root.adbPhoneConnected
+                            height: visible ? 42 : 0
+                            spacing: 10
+
+                            Rectangle {
+                                id: kdeConnectCard
+
+                                property bool active: root.activePanel === "kdeconnect"
+                                property bool hovered: kdeConnectMouse.containsMouse
+
+                                width: 100
+                                height: 42
+                                radius: 14
+
+                                color: root.cardBg(active, hovered)
+                                border.width: root.cardBorderWidth(active, hovered)
+                                border.color: root.cardBorder(active, hovered)
+
+                                Behavior on color { ColorAnimation { duration: 160 } }
+                                Behavior on border.color { ColorAnimation { duration: 160 } }
+
+                                Row {
+                                    anchors.fill: parent
+                                    anchors.margins: 9
+                                    spacing: 8
+
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "󰄡"
+                                        color: root.kdeConnectAvailable ? root.colBlue : root.colFg
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 15
+                                        font.bold: true
+                                        renderType: Text.NativeRendering
+                                    }
+
+                                    Column {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: 58
+                                        spacing: 1
+
+                                        Text {
+                                            width: parent.width
+                                            text: "KDE"
+                                            color: root.colFg
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 10
+                                            font.bold: true
+                                            elide: Text.ElideRight
+                                        }
+
+                                        Text {
+                                            width: parent.width
+                                            text: root.kdeConnectStatusText
+                                            color: root.kdeConnectAvailable ? root.colBlue : root.colMuted
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 8
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: kdeConnectMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+
+                                    onClicked: {
+                                        kdeConnectDevicesProc.running = false
+                                        kdeConnectDevicesProc.running = true
+                                        root.activePanel = "kdeconnect"
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                id: scrcpyCard
+
+                                property bool active: root.adbPhoneReady
+                                property bool hovered: scrcpyMouse.containsMouse
+
+                                width: 100
+                                height: 42
+                                radius: 14
+
+                                color: root.cardBg(active, hovered)
+                                border.width: root.cardBorderWidth(active, hovered)
+                                border.color: root.cardBorder(active, hovered)
+
+                                Behavior on color { ColorAnimation { duration: 160 } }
+                                Behavior on border.color { ColorAnimation { duration: 160 } }
+
+                                Row {
+                                    anchors.fill: parent
+                                    anchors.margins: 9
+                                    spacing: 8
+
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "󰄜"
+                                        color: root.adbPhoneReady ? root.colBlue : root.colMuted
+                                        font.family: root.fontFamily
+                                        font.pixelSize: 15
+                                        font.bold: true
+                                        renderType: Text.NativeRendering
+                                    }
+
+                                    Column {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: 58
+                                        spacing: 1
+
+                                        Text {
+                                            width: parent.width
+                                            text: "Scrcpy"
+                                            color: root.colFg
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 10
+                                            font.bold: true
+                                            elide: Text.ElideRight
+                                        }
+
+                                        Text {
+                                            width: parent.width
+                                            text: root.adbPhoneText
+                                            color: root.adbPhoneReady ? root.colBlue : root.colMuted
+                                            font.family: root.fontFamily
+                                            font.pixelSize: 8
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: scrcpyMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+
+                                    onClicked: {
+                                        scrcpyLaunchProc.running = false
+                                        scrcpyLaunchProc.running = true
+
+                                        phoneDetectProc.running = false
+                                        phoneDetectProc.running = true
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                        Rectangle {
+                            id: quickSettingsScrollHint
+
+                            width: 42
+                            height: 18
+                            radius: 9
+
+                            // This is a floating viewport hint. It lives inside the
+                            // Flickable content item, so we offset by contentY to keep
+                            // it visually pinned to the bottom of the visible area.
+                            x: Math.round((quickSettingsButtonsFlick.width - width) / 2)
+                            y: quickSettingsButtonsFlick.contentY
+                                + quickSettingsButtonsFlick.height
+                                - height
+                                - 6
+                            z: 999
+
+                            visible: quickSettingsButtonsFlick.contentHeight > quickSettingsButtonsFlick.height + 2
+                            opacity: quickSettingsButtonsFlick.contentY <
+                                quickSettingsButtonsFlick.contentHeight - quickSettingsButtonsFlick.height - 3
+                                ? 0.9
+                                : 0
+
+                            color: Qt.rgba(
+                                matugen.primaryContainer.r,
+                                matugen.primaryContainer.g,
+                                matugen.primaryContainer.b,
+                                0.78
+                            )
+
+                            border.width: 0.5
+                            border.color: root.colPrimaryAlpha
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: 160
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
+
+                            Text {
+                                anchors.centerIn: parent
+
+                                text: "⌄"
+                                color: root.colFg
+
+                                font.family: root.fontFamily
+                                font.pixelSize: 14
+                                font.bold: true
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+
+                                onClicked: {
+                                    var maxY = Math.max(
+                                        0,
+                                        quickSettingsButtonsFlick.contentHeight - quickSettingsButtonsFlick.height
+                                    )
+
+                                    quickSettingsButtonsFlick.contentY = Math.min(
+                                        maxY,
+                                        quickSettingsButtonsFlick.contentY + 72
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Row {
+                        id: verticalSliderGroup
+                        spacing: 6
+                        width: 76
+                        height: parent.height
+
+                        Rectangle {
+                            id: brightnessSliderCard
+
+                            property bool hovered: brightnessSliderMouse.containsMouse
+
+                            width: 35
+                            height: parent.height
+                            radius: 14
+
+                            color: root.cardBg(false, hovered)
+                            // No hover border on slider cards.
+                            border.width: 0
+                            border.color: "transparent"
+
+                            Behavior on color { ColorAnimation { duration: 160 } }
+
+                            Column {
+                                anchors.fill: parent
+                                anchors.margins: 8
+                                spacing: 7
+
+                                Text {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    text: "󰃠"
+                                    color: root.colFg
+                                    font.family: root.fontFamily
+                                    font.pixelSize: 14
+                                    font.bold: true
+                                    renderType: Text.NativeRendering
+                                }
+
+                                Rectangle {
+                                    id: brightnessSliderTrack
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    width: 14
+                                    height: parent.height - 54
+                                    radius: 7
+                                    color: matugen.surfaceContainerHigh
+
+                                    Rectangle {
+                                        id: brightnessSliderFill
+
+                                        anchors.bottom: parent.bottom
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        width: parent.width
+                                        height: Math.max(14, parent.height * root.brightnessPercent / 100)
+                                        radius: 7
+                                        color: root.colBlue
+
+                                        Behavior on height {
+                                            NumberAnimation {
+                                                duration: 80
+                                                easing.type: Easing.OutCubic
+                                            }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        id: brightnessSliderKnob
+
+                                        width: 16
+                                        height: 16
+                                        radius: 8
+
+                                        anchors.horizontalCenter: parent.horizontalCenter
+
+                                        y: Math.max(
+                                            0,
+                                            Math.min(
+                                                parent.height - height,
+                                                parent.height - brightnessSliderFill.height - height / 2
+                                            )
+                                        )
+
+                                        color: root.colFg
+
+                                        Behavior on y {
+                                            NumberAnimation {
+                                                duration: 80
+                                                easing.type: Easing.OutCubic
+                                            }
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        id: brightnessSliderMouse
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        preventStealing: true
+
+                                        function setFromY(ypos) {
+                                            var value = Math.round((1 - Math.max(0, Math.min(1, ypos / height))) * 100)
+                                            root.brightnessPercent = value
+                                            brightnessSetProc.running = false
+                                            brightnessSetProc.value = value
+                                            brightnessSetProc.running = true
+                                            brightnessRefreshDelay.restart()
+                                        }
+
+                                        onPressed: mouse => {
+                                            setFromY(mouse.y)
+                                        }
+
+                                        onPositionChanged: mouse => {
+                                            if (pressed)
+                                                setFromY(mouse.y)
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    width: parent.width
+                                    text: root.brightnessPercent + "%"
+                                    color: root.colMuted
+                                    font.family: root.fontFamily
+                                    font.pixelSize: 8
+                                    horizontalAlignment: Text.AlignHCenter
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            id: volumeSliderCard
+
+                            property bool hovered: volumeSliderMouse.containsMouse
+
+                            width: 35
+                            height: parent.height
+                            radius: 14
+
+                            color: root.cardBg(false, hovered)
+                            // No hover border on slider cards.
+                            border.width: 0
+                            border.color: "transparent"
+
+                            Behavior on color { ColorAnimation { duration: 160 } }
+
+                            Column {
+                                anchors.fill: parent
+                                anchors.margins: 8
+                                spacing: 7
+
+                                Text {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    text: "󰕾"
+                                    color: root.colFg
+                                    font.family: root.fontFamily
+                                    font.pixelSize: 14
+                                    font.bold: true
+                                    renderType: Text.NativeRendering
+                                }
+
+                                Rectangle {
+                                    id: volumeSliderTrack
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    width: 14
+                                    height: parent.height - 54
+                                    radius: 7
+                                    color: matugen.surfaceContainerHigh
+
+                                    Rectangle {
+                                        id: volumeSliderFill
+
+                                        anchors.bottom: parent.bottom
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        width: parent.width
+                                        height: Math.max(14, parent.height * root.volumePercent / 100)
+                                        radius: 7
+                                        color: root.colBlue
+
+                                        Behavior on height {
+                                            NumberAnimation {
+                                                duration: 80
+                                                easing.type: Easing.OutCubic
+                                            }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        id: volumeSliderKnob
+
+                                        width: 16
+                                        height: 16
+                                        radius: 8
+
+                                        anchors.horizontalCenter: parent.horizontalCenter
+
+                                        y: Math.max(
+                                            0,
+                                            Math.min(
+                                                parent.height - height,
+                                                parent.height - volumeSliderFill.height - height / 2
+                                            )
+                                        )
+
+                                        color: root.colFg
+
+                                        Behavior on y {
+                                            NumberAnimation {
+                                                duration: 80
+                                                easing.type: Easing.OutCubic
+                                            }
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        id: volumeSliderMouse
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        preventStealing: true
+
+                                        function setFromY(ypos) {
+                                            var value = Math.round((1 - Math.max(0, Math.min(1, ypos / height))) * 100)
+                                            root.volumePercent = value
+                                            volumeSetProc.running = false
+                                            volumeSetProc.value = value
+                                            volumeSetProc.running = true
+                                            volumeRefreshDelay.restart()
+                                        }
+
+                                        onPressed: mouse => {
+                                            setFromY(mouse.y)
+                                        }
+
+                                        onPositionChanged: mouse => {
+                                            if (pressed)
+                                                setFromY(mouse.y)
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    width: parent.width
+                                    text: root.volumePercent + "%"
+                                    color: root.colMuted
+                                    font.family: root.fontFamily
+                                    font.pixelSize: 8
+                                    horizontalAlignment: Text.AlignHCenter
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Column {
+                id: kdeConnectPanel
+
+                width: root.activePanel === "kdeconnect" ? 300 : 0
+                height: root.activePanel === "kdeconnect" ? sideColumn.height : 0
+                opacity: root.activePanel === "kdeconnect" ? 1 : 0
+
                 clip: true
                 spacing: 10
 
+                Behavior on opacity {
+                    NumberAnimation { duration: 180 }
+                }
+
                 Text {
-                    text: "Quick Settings"
+                    text: "KDE Connect"
                     color: root.colBlue
                     font.family: root.fontFamily
                     font.pixelSize: 16
                     font.bold: true
                 }
 
-                Row {
-                    spacing: 10
+                Rectangle {
+                    width: 280
+                    height: 64
+                    radius: 16
 
-                    Rectangle {
-                        id: connectivityBatteryCard
+                    color: matugen.surfaceContainer
+                    border.width: 0.5
+                    border.color: root.colBorder
 
-                        property bool active: root.activePanel === "battery"
-                        property bool hovered: connectivityBatteryMouse.containsMouse
+                    Row {
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 10
 
-                        width: 90
-                        height: 132
-                        radius: 16
-
-                        color: root.cardBg(active, hovered)
-                        border.width: root.cardBorderWidth(active, hovered)
-                        border.color: root.cardBorder(active, hovered)
-
-
-                        Behavior on color {
-                            ColorAnimation { duration: 160 }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "󰄡"
+                            color: root.kdeConnectAvailable ? root.colBlue : root.colMuted
+                            font.family: root.fontFamily
+                            font.pixelSize: 22
+                            font.bold: true
+                            renderType: Text.NativeRendering
                         }
 
-                        Behavior on border.color {
-                            ColorAnimation { duration: 160 }
-                        }
+                        Column {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 210
+                            spacing: 3
 
-
-                        Item {
-                            anchors.fill: parent
-                            anchors.margins: 10
-
-                            Rectangle {
-                                id: qsBatteryOutline
-                                anchors.bottom: parent.bottom
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                width: parent.width - 8
-                                height: parent.height - 10
-                                radius: 8
-                                color: "transparent"
-                                border.width: 2
-                                border.color: root.batteryCharging ? "#50fa7b" : root.batteryPercent <= 20 ? "#ff5555" : root.colFg
-                            }
-
-                            Rectangle {
-                                anchors.horizontalCenter: qsBatteryOutline.horizontalCenter
-                                anchors.bottom: qsBatteryOutline.top
-                                anchors.bottomMargin: -2
-                                width: 12
-                                height: 5
-                                radius: 2
-                                color: qsBatteryOutline.border.color
-                            }
-
-                            Rectangle {
-                                id: qsBatteryFill
-                                property real chargeAnim: 0.05
-                                anchors.bottom: qsBatteryOutline.bottom
-                                anchors.bottomMargin: 4
-                                anchors.horizontalCenter: qsBatteryOutline.horizontalCenter
-                                width: qsBatteryOutline.width - 8
-                                height: Math.max(6, (qsBatteryOutline.height - 8) * (root.batteryCharging ? chargeAnim : root.batteryPercent / 100))
-                                radius: 4
-                                color: root.batteryCharging ? "#50fa7b" : root.batteryPercent > 40 ? "#50fa7b" : root.batteryPercent > 15 ? "#ffb86c" : "#ff5555"
-
-                                NumberAnimation on chargeAnim {
-                                    running: root.batteryCharging
-                                    loops: Animation.Infinite
-                                    from: Math.max(0.05, root.batteryPercent / 100)
-                                    to: 1.0
-                                    duration: 1200
-                                    easing.type: Easing.InOutCubic
-                                }
-
-                                Behavior on height {
-                                    enabled: !root.batteryCharging
-
-                                    NumberAnimation {
-                                        duration: 250
-                                        easing.type: Easing.OutCubic
-                                    }
-                                }
-
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: 250
-                                    }
-                                }
+                            Text {
+                                width: parent.width
+                                text: root.kdeConnectDeviceName
+                                color: root.colFg
+                                font.family: root.fontFamily
+                                font.pixelSize: 12
+                                font.bold: true
+                                elide: Text.ElideRight
                             }
 
                             Text {
-                                z: 10
-                                anchors.horizontalCenter: qsBatteryFill.horizontalCenter
-
-                                y: qsBatteryFill.y
-                                    + (qsBatteryFill.height / 2)
-                                    - (height / 2)
-
-                                text: root.batteryPercent + ""
-                                color: root.batteryPercent > 40 ? root.colBg : "#000000"
+                                width: parent.width
+                                text: root.kdeConnectAvailable
+                                    ? (root.kdeConnectBatteryPercent >= 0 ? "Battery " + root.kdeConnectBatteryPercent + "%" : "Available")
+                                    : "Open KDE Connect to pair a device"
+                                color: root.colMuted
                                 font.family: root.fontFamily
-                                font.pixelSize: 11
-                                font.bold: true
-                            }
-                        }
-
-                        MouseArea {
-                            id: connectivityBatteryMouse
-
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-
-                            onClicked: root.activePanel = "battery"
-                        }
-                    }
-
-                    Column {
-                        spacing: 8
-
-                        Rectangle {
-                            id: connectivityWifiCard
-
-                            property bool active: root.activePanel === "wifiList"
-                            property bool hovered: connectivityWifiMouse.containsMouse
-
-                            width: 110
-                            height: 62
-                            radius: 16
-
-                            color: root.cardBg(active, hovered)
-                            border.width: root.cardBorderWidth(active, hovered)
-                            border.color: root.cardBorder(active, hovered)
-
-
-                            Behavior on color {
-                                ColorAnimation { duration: 160 }
-                            }
-
-                            Behavior on border.color {
-                                ColorAnimation { duration: 160 }
-                            }
-
-
-                            Column {
-                                anchors.fill: parent
-                                anchors.margins: 10
-                                spacing: 4
-
-                                Text {
-                                    text: "WiFi"
-                                    color: root.colFg
-                                    font.family: root.fontFamily
-                                    font.pixelSize: 13
-                                    font.bold: true
-                                }
-
-                                Text {
-                                    width: parent.width
-                                    text: root.wifiConnected ? root.wifiSsid : "Disconnected"
-                                    color: root.wifiConnected ? root.colBlue : root.colMuted
-                                    font.family: root.fontFamily
-                                    font.pixelSize: 10
-                                    elide: Text.ElideRight
-                                }
-                            }
-
-                            MouseArea {
-                                id: connectivityWifiMouse
-
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-
-                                onClicked: {
-                                    wifiListProc.running = true
-                                    root.activePanel = "wifiList"
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            id: connectivityBluetoothCard
-
-                            property bool active: false
-                            property bool hovered: connectivityBluetoothMouse.containsMouse
-
-                            width: 110
-                            height: 62
-                            radius: 16
-
-                            color: root.cardBg(false, hovered)
-                            border.width: root.cardBorderWidth(false, hovered)
-                            border.color: root.cardBorder(false, hovered)
-
-
-                            Behavior on color {
-                                ColorAnimation { duration: 160 }
-                            }
-
-                            Behavior on border.color {
-                                ColorAnimation { duration: 160 }
-                            }
-
-
-                            Column {
-                                anchors.fill: parent
-                                anchors.margins: 10
-                                spacing: 4
-
-                                Text {
-                                    text: "Bluetooth"
-                                    color: root.colFg
-                                    font.family: root.fontFamily
-                                    font.pixelSize: 13
-                                    font.bold: true
-                                }
-
-                                Text {
-                                    text: root.bluetoothText
-                                    color: root.bluetoothPowered ? root.colBlue : root.colMuted
-                                    font.family: root.fontFamily
-                                    font.pixelSize: 10
-                                }
-                            }
-
-                            MouseArea {
-                                id: connectivityBluetoothMouse
-
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-
-                                onClicked: {
-                                    bluetoothManagerProc.running = false
-                                    bluetoothManagerProc.running = true
-                                }
+                                font.pixelSize: 9
+                                elide: Text.ElideRight
                             }
                         }
                     }
                 }
 
                 Row {
+                    spacing: 8
+
+                    Repeater {
+                        model: root.kdeConnectDevices
+
+                        Rectangle {
+                            property bool active: modelData.id === root.kdeConnectDeviceId
+                            property bool hovered: kdeDeviceMouse.containsMouse
+
+                            width: 88
+                            height: 32
+                            radius: 12
+
+                            color: root.cardBg(active, hovered)
+                            border.width: root.cardBorderWidth(active, hovered)
+                            border.color: root.cardBorder(active, hovered)
+
+                            Behavior on color { ColorAnimation { duration: 160 } }
+                            Behavior on border.color { ColorAnimation { duration: 160 } }
+
+                            Text {
+                                anchors.centerIn: parent
+                                width: parent.width - 12
+                                text: modelData.name
+                                color: root.colFg
+                                font.family: root.fontFamily
+                                font.pixelSize: 9
+                                font.bold: true
+                                horizontalAlignment: Text.AlignHCenter
+                                elide: Text.ElideRight
+                            }
+
+                            MouseArea {
+                                id: kdeDeviceMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+
+                                onClicked: {
+                                    root.kdeConnectDeviceId = modelData.id
+                                    root.kdeConnectDeviceName = modelData.name
+                                    kdeConnectBatteryProc.running = false
+                                    kdeConnectBatteryProc.running = true
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Grid {
+                    columns: 2
                     spacing: 10
 
                     Rectangle {
-                        id: connectivityPowerCard
-
-                        property bool active: root.powerMode.toLowerCase().indexOf("performance") >= 0
-                        property bool hovered: connectivityPowerMouse.containsMouse
-
-                        width: 100
+                        id: kdeOpenCard
+                        property bool hovered: kdeOpenMouse.containsMouse
+                        width: 135
                         height: 42
                         radius: 14
+                        color: root.cardBg(false, hovered)
+                        border.width: 0
+                        border.color: "transparent"
+                        Behavior on color { ColorAnimation { duration: 160 } }
 
-                        color: root.cardBg(active, hovered)
-                        border.width: root.cardBorderWidth(active, hovered)
-                        border.color: root.cardBorder(active, hovered)
-
-
-                        Behavior on color {
-                            ColorAnimation { duration: 160 }
-                        }
-
-                        Behavior on border.color {
-                            ColorAnimation { duration: 160 }
-                        }
-
-
-                        Row {
-                            anchors.fill: parent
-                            anchors.margins: 9
-                            spacing: 8
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-
-                                text: root.powerIcon
-                                color: root.powerColor
-
-                                font.family: root.fontFamily
-                                font.pixelSize: 15
-                                font.bold: true
-                                renderType: Text.NativeRendering
-                            }
-
-                            Column {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: 58
-                                spacing: 1
-
-                                Text {
-                                    width: parent.width
-
-                                    text: "Power"
-                                    color: root.colFg
-
-                                    font.family: root.fontFamily
-                                    font.pixelSize: 10
-                                    font.bold: true
-
-                                    elide: Text.ElideRight
-                                }
-
-                                Text {
-                                    width: parent.width
-
-                                    text: root.powerMode
-                                    color: root.colMuted
-
-                                    font.family: root.fontFamily
-                                    font.pixelSize: 8
-
-                                    elide: Text.ElideRight
-                                }
-                            }
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Open app"
+                            color: root.colFg
+                            font.family: root.fontFamily
+                            font.pixelSize: 10
+                            font.bold: true
                         }
 
                         MouseArea {
-                            id: connectivityPowerMouse
-
+                            id: kdeOpenMouse
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-
                             onClicked: {
-                                powerToggleProc.running = false
-                                powerToggleProc.running = true
-                                powerRefreshDelay.restart()
+                                kdeConnectActionProc.action = "open"
+                                kdeConnectActionProc.running = false
+                                kdeConnectActionProc.running = true
                             }
                         }
                     }
 
                     Rectangle {
-                        id: connectivityDisplayCard
-
-                        property bool active: root.displayGameMode
-                        property bool hovered: connectivityDisplayMouse.containsMouse
-
-                        width: 100
+                        id: kdeRefreshCard
+                        property bool hovered: kdeRefreshMouse.containsMouse
+                        width: 135
                         height: 42
                         radius: 14
+                        color: root.cardBg(false, hovered)
+                        border.width: 0
+                        border.color: "transparent"
+                        Behavior on color { ColorAnimation { duration: 160 } }
 
-                        color: root.cardBg(active, hovered)
-                        border.width: root.cardBorderWidth(active, hovered)
-                        border.color: root.cardBorder(active, hovered)
-
-
-                        Behavior on color {
-                            ColorAnimation { duration: 160 }
-                        }
-
-                        Behavior on border.color {
-                            ColorAnimation { duration: 160 }
-                        }
-
-
-                        Row {
-                            anchors.fill: parent
-                            anchors.margins: 9
-                            spacing: 8
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-
-                                text: root.displayGameMode ? "󰍹" : "󰍺"
-                                color: root.displayGameMode ? root.colBlue : root.colFg
-
-                                font.family: root.fontFamily
-                                font.pixelSize: 15
-                                font.bold: true
-                                renderType: Text.NativeRendering
-                            }
-
-                            Column {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: 58
-                                spacing: 1
-
-                                Text {
-                                    width: parent.width
-
-                                    text: "Display"
-                                    color: root.colFg
-
-                                    font.family: root.fontFamily
-                                    font.pixelSize: 10
-                                    font.bold: true
-
-                                    elide: Text.ElideRight
-                                }
-
-                                Text {
-                                    width: parent.width
-
-                                    text: root.displayText
-                                    color: root.colMuted
-
-                                    font.family: root.fontFamily
-                                    font.pixelSize: 8
-
-                                    elide: Text.ElideRight
-                                }
-                            }
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Refresh"
+                            color: root.colFg
+                            font.family: root.fontFamily
+                            font.pixelSize: 10
+                            font.bold: true
                         }
 
                         MouseArea {
-                            id: connectivityDisplayMouse
-
+                            id: kdeRefreshMouse
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-
                             onClicked: {
-                                displayProc.running = false
-                                displayProc.running = true
-                                root.activePanel = "display"
+                                kdeConnectActionProc.action = "refresh"
+                                kdeConnectActionProc.running = false
+                                kdeConnectActionProc.running = true
+                                kdeConnectRefreshDelay.restart()
                             }
+                        }
+                    }
+
+                    Rectangle {
+                        id: kdePingCard
+                        property bool hovered: kdePingMouse.containsMouse
+                        width: 135
+                        height: 42
+                        radius: 14
+                        color: root.cardBg(root.kdeConnectAvailable, hovered)
+                        border.width: 0
+                        border.color: "transparent"
+                        opacity: root.kdeConnectAvailable ? 1 : 0.45
+                        Behavior on color { ColorAnimation { duration: 160 } }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Ping phone"
+                            color: root.colFg
+                            font.family: root.fontFamily
+                            font.pixelSize: 10
+                            font.bold: true
+                        }
+
+                        MouseArea {
+                            id: kdePingMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                if (!root.kdeConnectAvailable)
+                                    return
+
+                                kdeConnectActionProc.action = "ping"
+                                kdeConnectActionProc.deviceId = root.kdeConnectDeviceId
+                                kdeConnectActionProc.running = false
+                                kdeConnectActionProc.running = true
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        id: kdeRingCard
+                        property bool hovered: kdeRingMouse.containsMouse
+                        width: 135
+                        height: 42
+                        radius: 14
+                        color: root.cardBg(root.kdeConnectAvailable, hovered)
+                        border.width: 0
+                        border.color: "transparent"
+                        opacity: root.kdeConnectAvailable ? 1 : 0.45
+                        Behavior on color { ColorAnimation { duration: 160 } }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Find phone"
+                            color: root.colFg
+                            font.family: root.fontFamily
+                            font.pixelSize: 10
+                            font.bold: true
+                        }
+
+                        MouseArea {
+                            id: kdeRingMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                if (!root.kdeConnectAvailable)
+                                    return
+
+                                kdeConnectActionProc.action = "ring"
+                                kdeConnectActionProc.deviceId = root.kdeConnectDeviceId
+                                kdeConnectActionProc.running = false
+                                kdeConnectActionProc.running = true
+                            }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    id: kdeScrcpyCard
+
+                    property bool hovered: kdeScrcpyMouse.containsMouse
+
+                    visible: root.adbPhoneConnected
+                    width: 280
+                    height: visible ? 42 : 0
+                    radius: 14
+
+                    color: root.cardBg(root.adbPhoneReady, hovered)
+                    border.width: 0
+                    border.color: "transparent"
+                    Behavior on color { ColorAnimation { duration: 160 } }
+
+                    Row {
+                        anchors.fill: parent
+                        anchors.margins: 10
+                        spacing: 8
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "󰄜"
+                            color: root.adbPhoneReady ? root.colBlue : root.colMuted
+                            font.family: root.fontFamily
+                            font.pixelSize: 15
+                            font.bold: true
+                            renderType: Text.NativeRendering
+                        }
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width - 36
+                            text: root.adbPhoneReady ? "Launch Scrcpy" : root.adbPhoneText
+                            color: root.colFg
+                            font.family: root.fontFamily
+                            font.pixelSize: 10
+                            font.bold: true
+                            elide: Text.ElideRight
+                        }
+                    }
+
+                    MouseArea {
+                        id: kdeScrcpyMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            scrcpyLaunchProc.running = false
+                            scrcpyLaunchProc.running = true
+
+                            phoneDetectProc.running = false
+                            phoneDetectProc.running = true
                         }
                     }
                 }
@@ -1542,7 +4345,7 @@ PanelWindow {
                 id: displayPanel
 
                 width: root.activePanel === "display" ? 210 : 0
-                height: root.activePanel === "display" ? sideColumn.implicitHeight : 0
+                height: root.activePanel === "display" ? sideColumn.height : 0
                 opacity: root.activePanel === "display" ? 1 : 0
 
                 clip: true
@@ -1764,7 +4567,7 @@ PanelWindow {
                 id: mediaPanel
 
                 width: root.activePanel === "media" && root.mediaStatus !== "Stopped" ? 210 : 0
-                height: root.activePanel === "media" ? sideColumn.implicitHeight : 0
+                height: root.activePanel === "media" ? sideColumn.height : 0
                 opacity: root.activePanel === "media" && root.mediaStatus !== "Stopped" ? 1 : 0
 
                 clip: true
@@ -1780,32 +4583,19 @@ PanelWindow {
                     id: mediaPanelCard
 
                     width: 210
-                    height: sideColumn.implicitHeight
+                    height: sideColumn.height
                     radius: 18
 
                     clip: true
-                    color: matugen.surfaceContainer
+                    antialiasing: true
+                    layer.enabled: true
+                    layer.smooth: true
 
-                    // Soft cover background fallback.
-                    Image {
-                        anchors.centerIn: parent
-
-                        width: parent.width * 1.55
-                        height: parent.height * 1.55
-
-                        source: root.mediaArtUrl
-                        fillMode: Image.PreserveAspectCrop
-                        asynchronous: true
-
-                        visible: root.mediaArtUrl !== ""
-                        opacity: 0.20
-                    }
-
-                    // Strong dark overlay so controls/text stay readable.
-                    Rectangle {
-                        anchors.fill: parent
-                        color: "#000000cc"
-                    }
+                    // Solid black media background.
+                    // No album-art wash here, so nothing turns purple or leaks past the rounded card.
+                    color: "#000000"
+                    border.width: 0
+                    border.color: "transparent"
 
                     // Album art stays on top.
                     Rectangle {
@@ -1821,19 +4611,73 @@ PanelWindow {
                         height: 105
                         radius: 16
 
-                        color: matugen.surfaceContainer
-                        border.width: 1
-                        border.color: matugen.borderSubtle
+                        color: "#000000"
+                        border.width: 0
+                        border.color: "transparent"
                         clip: true
+                        antialiasing: true
+                        layer.enabled: true
+                        layer.smooth: true
 
                         Image {
+                            id: albumArtImage
+
                             anchors.fill: parent
 
                             source: root.mediaArtUrl
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
+                            smooth: true
+                            mipmap: true
 
                             visible: root.mediaArtUrl !== ""
+                        }
+
+                        // Corner masks make the album art visually rounded even on QS builds
+                        // where Rectangle clipping only clips to the square item bounds.
+                        // They match the black media card background.
+                        Canvas {
+                            anchors.fill: parent
+                            visible: root.mediaArtUrl !== ""
+
+                            onPaint: {
+                                var ctx = getContext("2d")
+                                ctx.reset()
+
+                                var r = albumArtCard.radius
+                                var w = width
+                                var h = height
+
+                                ctx.fillStyle = mediaPanelCard.color
+
+                                ctx.beginPath()
+                                ctx.moveTo(0, 0)
+                                ctx.lineTo(r, 0)
+                                ctx.arc(r, r, r, -Math.PI / 2, Math.PI, true)
+                                ctx.lineTo(0, 0)
+                                ctx.fill()
+
+                                ctx.beginPath()
+                                ctx.moveTo(w, 0)
+                                ctx.lineTo(w - r, 0)
+                                ctx.arc(w - r, r, r, -Math.PI / 2, 0, false)
+                                ctx.lineTo(w, 0)
+                                ctx.fill()
+
+                                ctx.beginPath()
+                                ctx.moveTo(0, h)
+                                ctx.lineTo(0, h - r)
+                                ctx.arc(r, h - r, r, Math.PI, Math.PI / 2, true)
+                                ctx.lineTo(0, h)
+                                ctx.fill()
+
+                                ctx.beginPath()
+                                ctx.moveTo(w, h)
+                                ctx.lineTo(w, h - r)
+                                ctx.arc(w - r, h - r, r, 0, Math.PI / 2, false)
+                                ctx.lineTo(w, h)
+                                ctx.fill()
+                            }
                         }
 
                         Text {
@@ -1910,9 +4754,10 @@ PanelWindow {
                         height: 86
                         radius: 16
 
-                        color: matugen.surfaceAlpha
-                        border.width: 1
-                        border.color: matugen.borderSubtle
+                        // Always dark neutral grey, independent of Matugen accent.
+                        color: "#1b1d22"
+                        border.width: 0
+                        border.color: "transparent"
 
                         Column {
                             anchors {
@@ -1929,13 +4774,8 @@ PanelWindow {
                                 height: 8
                                 radius: 4
 
-                                color: mediaSeekMouse.containsMouse
-                                    ? matugen.primaryContainer
-                                    : matugen.surfaceContainerHigh
-
-                                Behavior on color {
-                                    ColorAnimation { duration: 160 }
-                                }
+                                // Keep the progress track dark grey even on hover.
+                                color: "#343840"
 
                                 Rectangle {
                                     id: mediaProgressFill
@@ -2026,8 +4866,8 @@ PanelWindow {
                                     height: 28
                                     radius: 10
                                     color: root.cardBg(false, previousMouse.containsMouse)
-                                    border.width: root.cardBorderWidth(false, previousMouse.containsMouse)
-                                    border.color: root.cardBorder(false, previousMouse.containsMouse)
+                                    border.width: 0
+                                    border.color: "transparent"
 
 
                                     Text {
@@ -2058,8 +4898,8 @@ PanelWindow {
                                     height: 30
                                     radius: 11
                                     color: root.cardBg(root.mediaStatus === "Playing", playPauseMouse.containsMouse)
-                                    border.width: root.cardBorderWidth(root.mediaStatus === "Playing", playPauseMouse.containsMouse)
-                                    border.color: root.cardBorder(root.mediaStatus === "Playing", playPauseMouse.containsMouse)
+                                    border.width: 0
+                                    border.color: "transparent"
 
 
                                     Text {
@@ -2091,8 +4931,8 @@ PanelWindow {
                                     height: 28
                                     radius: 10
                                     color: root.cardBg(false, nextMouse.containsMouse)
-                                    border.width: root.cardBorderWidth(false, nextMouse.containsMouse)
-                                    border.color: root.cardBorder(false, nextMouse.containsMouse)
+                                    border.width: 0
+                                    border.color: "transparent"
 
 
                                     Text {
@@ -2126,7 +4966,7 @@ PanelWindow {
             Column {
                 id: wifiListPanel
                 width: root.activePanel === "wifiList" ? 210 : 0
-                height: root.activePanel === "wifiList" ? sideColumn.implicitHeight : 0
+                height: root.activePanel === "wifiList" ? sideColumn.height : 0
                 opacity: root.activePanel === "wifiList" ? 1 : 0
                 clip: true
                 spacing: 10
@@ -2136,7 +4976,7 @@ PanelWindow {
 
                 Flickable {
                     width: 190
-                    height: Math.max(120, sideColumn.implicitHeight - 55)
+                    height: Math.max(120, sideColumn.height - 55)
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds
                     contentWidth: width

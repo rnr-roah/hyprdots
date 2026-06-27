@@ -2,42 +2,42 @@ import QtQuick
 
 QtObject {
     // Core surfaces
-    readonly property color bg: "#101418"
-    readonly property color surface: "#101418"
-    readonly property color surfaceDim: "#101418"
-    readonly property color surfaceBright: "#36393e"
+    readonly property color bg: "#171217"
+    readonly property color surface: "#171217"
+    readonly property color surfaceDim: "#171217"
+    readonly property color surfaceBright: "#3d373d"
 
-    readonly property color surfaceContainerLowest: "#0b0e12"
-    readonly property color surfaceContainerLow: "#191c20"
-    readonly property color surfaceContainer: "#1d2024"
-    readonly property color surfaceContainerHigh: "#272a2f"
-    readonly property color surfaceContainerHighest: "#32353a"
+    readonly property color surfaceContainerLowest: "#110d11"
+    readonly property color surfaceContainerLow: "#1f1a1f"
+    readonly property color surfaceContainer: "#231e23"
+    readonly property color surfaceContainerHigh: "#2e282d"
+    readonly property color surfaceContainerHighest: "#393338"
 
     // Text
-    readonly property color fg: "#e0e2e8"
-    readonly property color fgVariant: "#c2c7cf"
-    readonly property color muted: "#8c9199"
-    readonly property color mutedStrong: "#42474e"
+    readonly property color fg: "#eadfe7"
+    readonly property color fgVariant: "#cfc3cd"
+    readonly property color muted: "#988d97"
+    readonly property color mutedStrong: "#4d444c"
 
     // Accents
-    readonly property color primary: "#9ecafc"
-    readonly property color primaryFg: "#003256"
-    readonly property color primaryContainer: "#144974"
-    readonly property color primaryContainerFg: "#d0e4ff"
+    readonly property color primary: "#e9b5ee"
+    readonly property color primaryFg: "#48214f"
+    readonly property color primaryContainer: "#603767"
+    readonly property color primaryContainerFg: "#fed6ff"
 
-    readonly property color secondary: "#bac8db"
-    readonly property color secondaryFg: "#243140"
+    readonly property color secondary: "#d7bfd5"
+    readonly property color secondaryFg: "#3b2b3c"
 
-    readonly property color tertiary: "#d5bee5"
-    readonly property color tertiaryFg: "#3a2a48"
+    readonly property color tertiary: "#f5b8af"
+    readonly property color tertiaryFg: "#4c2520"
 
     // Status colors
     readonly property color danger: "#ffb4ab"
     readonly property color dangerFg: "#690005"
 
     // Handy alpha variants
-    readonly property color bgAlpha: "#101418dd"
-    readonly property color surfaceAlpha: "#101418dd"
-    readonly property color primaryAlpha: "#9ecafcaa"
-    readonly property color borderSubtle: "#42474e66"
+    readonly property color bgAlpha: "#171217dd"
+    readonly property color surfaceAlpha: "#171217dd"
+    readonly property color primaryAlpha: "#e9b5eeaa"
+    readonly property color borderSubtle: "#4d444c66"
 }
